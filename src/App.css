@@ -1,0 +1,781 @@
+/* TRŪ Bowl Tip Calculator - black & white theme */
+
+:root {
+  --bg: #f5f5f5;
+  --bg-panel: #ffffff;
+  --bg-input: #fafafa;
+  --border: #e0e0e0;
+  --border-focus: #000000;
+  --text: #0a0a0a;
+  --text-muted: #525252;
+  --text-light: #737373;
+  --black: #0a0a0a;
+  --white: #ffffff;
+  --accent: #171717;
+  --accent-soft: #f5f5f5;
+  --green: #171717;
+  --green-soft: #f5f5f5;
+  --green-dark: #000000;
+  --chart-1: #404040;
+  --chart-2: #737373;
+  --chart-3: #525252;
+  --chart-4: #a3a3a3;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.app {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* Header - TRŪ Bowl black bar with logo */
+.app-header {
+  background: #000000;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.app-header-logo {
+  height: 48px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.app-header-titles {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.02em;
+}
+
+.app-subtitle {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+/* Layout */
+.app-layout {
+  display: flex;
+  max-width: 1320px;
+  margin: 0 auto;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem 2rem;
+}
+
+.app-sidebar {
+  flex: 0 0 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Panels - calculator tool style */
+.roster-manager,
+.period-selector,
+.period-summary,
+.day-entry {
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+
+.roster-manager h2,
+.period-selector h2,
+.period-summary h2,
+.day-entries h2 {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.roster-manager h2::before,
+.period-selector h2::before,
+.period-summary h2::before,
+.day-entries h2::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background: var(--black);
+  border-radius: 2px;
+}
+
+/* Roster */
+.roster-add {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.roster-add input {
+  flex: 1;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  background: var(--bg-input);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.roster-add input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.roster-add button {
+  padding: 0.55rem 1rem;
+  background: var(--black);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.roster-add button:hover {
+  background: var(--accent);
+}
+
+.roster-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.roster-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.2rem;
+  gap: 0.5rem;
+}
+
+.roster-item:hover {
+  background: var(--bg-input);
+}
+
+.roster-name {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.roster-actions button {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-panel);
+  color: var(--text-muted);
+}
+
+.roster-actions button:hover {
+  background: var(--accent-soft);
+  color: var(--black);
+  border-color: var(--black);
+}
+
+.roster-edit-form input {
+  flex: 1;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--black);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background: var(--accent-soft);
+}
+
+.roster-edit-form button[type='submit'] {
+  background: var(--black);
+  color: #fff;
+  border: none;
+  padding: 0.45rem 0.75rem;
+}
+
+.roster-empty {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+/* Period selector */
+.period-current,
+.period-none {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.period-current-label {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.period-past {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.period-past h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.period-past-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.period-past-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.period-past-item:last-child {
+  border-bottom: none;
+}
+
+.period-past-open {
+  flex: 1;
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.9rem;
+  color: var(--black);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.period-past-open:hover {
+  background: var(--accent-soft);
+  color: var(--black);
+}
+
+.period-past-remove {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+}
+
+.period-past-remove:hover {
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.btn-new-period {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.btn-new-period:hover {
+  background: var(--accent-soft);
+  border-color: var(--black);
+  color: var(--black);
+}
+
+.new-period-form {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.new-period-form label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.new-period-form input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.new-period-form button[type='submit'] {
+  width: 100%;
+  padding: 0.55rem;
+  background: var(--black);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.new-period-form button[type='submit']:hover {
+  background: var(--accent);
+}
+
+/* Buttons */
+button {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+button:hover {
+  background: var(--bg-input);
+}
+
+.btn-remove {
+  color: #dc2626;
+  border-color: transparent;
+  background: transparent;
+}
+
+.btn-remove:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+/* Empty state */
+.empty-state {
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  border: 2px dashed var(--border);
+}
+
+/* Period summary */
+.period-summary {
+  margin-bottom: 1.5rem;
+}
+
+.period-range {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.summary-empty {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+/* Tip distribution bar chart */
+.tip-chart {
+  margin-bottom: 1.25rem;
+}
+
+.tip-chart-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.tip-chart-name {
+  flex: 0 0 100px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.tip-chart-bar-wrap {
+  flex: 1;
+  min-width: 0;
+  height: 20px;
+  background: var(--bg-input);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tip-chart-bar {
+  height: 100%;
+  border-radius: 4px;
+  min-width: 4px;
+  transition: width 0.3s ease;
+}
+
+.tip-chart-value {
+  flex: 0 0 70px;
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  color: var(--black);
+}
+
+/* Summary table */
+.summary-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.summary-table th,
+.summary-table td {
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.summary-table th {
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-input);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.summary-table .col-total {
+  font-weight: 700;
+  background: var(--accent-soft);
+  color: var(--black);
+}
+
+.summary-table td.col-total {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--accent-soft);
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Day entries */
+.day-entries {
+  margin-top: 1.5rem;
+}
+
+.day-entries h2 {
+  margin-bottom: 1rem;
+}
+
+.day-entry {
+  margin-bottom: 1rem;
+}
+
+.day-date {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.day-tips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+}
+
+.day-tips label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.day-tips input {
+  width: 6rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.day-tips input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+.day-tips-total {
+  font-weight: 700;
+  color: var(--black);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+}
+
+.day-hours {
+  margin-bottom: 1rem;
+}
+
+.day-hours h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.day-hours-add {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.day-hours-select {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  background: var(--bg-input);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.day-hours-select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+.btn-add-employee {
+  padding: 0.5rem 1rem;
+  background: var(--black);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-add-employee:hover:not(:disabled) {
+  background: var(--accent);
+}
+
+.btn-add-employee:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.day-hours-hint {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+.day-hours-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.day-hours-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.day-hours-row:last-child {
+  border-bottom: none;
+}
+
+.day-hours-name {
+  flex: 0 0 120px;
+  font-size: 0.9rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.day-hours-input {
+  width: 5rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.day-hours-input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+.day-hours-unit {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.btn-remove-inline {
+  margin-left: auto;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  color: #dc2626;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.btn-remove-inline:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-radius: 4px;
+}
+
+.day-results {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.day-calc-summary {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.day-shares-table {
+  width: 100%;
+  max-width: 380px;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-top: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.day-shares-table th,
+.day-shares-table td {
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.day-shares-table th {
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-input);
+  font-size: 0.8rem;
+}
+
+.day-shares-table td:last-child {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  color: var(--black);
+}
+
+.day-reconciled {
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.day-reconciled.ok {
+  color: var(--text-muted);
+}
+
+.day-reconciled.ok::before {
+  display: none;
+}
+
+.day-reconciled.warning {
+  color: #d97706;
+}
+
+/* Print */
+@media print {
+  .app {
+    background: #fff;
+  }
+
+  .app-header {
+    border-bottom: 1px solid #ddd;
+  }
+
+  .app-sidebar,
+  .day-entries,
+  .day-entry .day-tips,
+  .day-entry .day-hours,
+  .btn-new-period,
+  .new-period-form,
+  .roster-add,
+  .roster-actions,
+  .roster-edit-form,
+  button,
+  .tip-chart {
+    display: none !important;
+  }
+
+  .period-summary,
+  .summary-table-wrap {
+    break-inside: avoid;
+  }
+}
