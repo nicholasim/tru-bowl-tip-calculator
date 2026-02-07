@@ -25,3 +25,11 @@ select,
 button {
   font-family: inherit;
 }
+
+/* Prevent zoom on input focus (iOS) - 16px minimum */
+@media (max-width: 768px) {
+  input,
+  select {
+    font-size: max(1rem, 16px);
+  }
+}
