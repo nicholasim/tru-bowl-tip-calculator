@@ -10,7 +10,7 @@ export function TipDistributionChart({ shares, rosterMap }) {
   return (
     <div className="tip-chart">
       {entries.map(([employeeId, amount], i) => {
-        const name = rosterMap[employeeId]?.name ?? employeeId
+        const name = rosterMap[employeeId]?.name ?? 'Former employee'
         const pct = (amount / maxVal) * 100
         return (
           <div key={employeeId} className="tip-chart-row">

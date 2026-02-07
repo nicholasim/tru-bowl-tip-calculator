@@ -50,6 +50,13 @@ function App() {
     setCurrentUser(null)
   }
 
+  const handleResetUser = () => {
+    if (!window.confirm('Clear all data for this user? Roster and pay periods will be reset.')) return
+    setRoster([])
+    setPeriods([])
+    setActivePeriodId(null)
+  }
+
   if (!currentUser) {
     return (
       <div className="app">
@@ -108,6 +115,14 @@ function App() {
           <h1>Tip Calculator</h1>
           <span className="app-header-user">
             {formatDisplayName(currentUser)}
+            <button
+              type="button"
+              onClick={handleResetUser}
+              className="btn-reset-user"
+              aria-label="Reset user data"
+            >
+              Reset
+            </button>
             <button
               type="button"
               onClick={handleSwitchUser}

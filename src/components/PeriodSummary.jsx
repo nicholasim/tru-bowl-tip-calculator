@@ -10,12 +10,11 @@ export function PeriodSummary({ period, roster }) {
   )
 
   const rosterMap = Object.fromEntries(roster.map((e) => [e.id, e]))
+  const getDisplayName = (id) => rosterMap[id]?.name ?? 'Former employee'
   const employeeIds = [...new Set([...Object.keys(byEmployee), ...roster.map((e) => e.id)])]
-  const sortedIds = employeeIds.sort((a, b) => {
-    const nameA = rosterMap[a]?.name ?? a
-    const nameB = rosterMap[b]?.name ?? b
-    return nameA.localeCompare(nameB)
-  })
+  const sortedIds = employeeIds.sort((a, b) =>
+    getDisplayName(a).localeCompare(getDisplayName(b))
+  )
 
   const hasAnyData = sortedIds.some(
     (id) =>
@@ -50,7 +49,7 @@ export function PeriodSummary({ period, roster }) {
           </thead>
           <tbody>
             {sortedIds.map((employeeId) => {
-              const name = rosterMap[employeeId]?.name ?? employeeId
+              const name = getDisplayName(employeeId)
               const total = byEmployee[employeeId] ?? 0
               const hasData = total > 0 || period.days.some((d) => (byDay[d.date]?.[employeeId] ?? 0) > 0)
               if (!hasData) return null
