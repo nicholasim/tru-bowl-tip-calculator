@@ -1,12 +1,24 @@
 import { useState } from 'react'
 import './App.css'
-import { useTipCalcStorage } from './hooks/useLocalStorage'
+import { useTipCalcStorage, useLocalStorage } from './hooks/useLocalStorage'
 import { createPayPeriod, formatPeriodRange } from './lib/periodHelpers'
+import { STORAGE_KEYS } from './lib/constants'
 import { RosterManager } from './components/RosterManager'
 import { DayEntry } from './components/DayEntry'
 import { PeriodSummary } from './components/PeriodSummary'
+import { UserScreen } from './components/UserScreen'
+
+function formatDisplayName(username) {
+  return username
+    .trim()
+    .split(/[\s_]+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ')
+}
 
 function App() {
+  const [currentUser, setCurrentUser] = useLocalStorage(STORAGE_KEYS.CURRENT_USER, null)
+
   const {
     roster,
     setRoster,
@@ -14,7 +26,7 @@ function App() {
     setPeriods,
     activePeriodId,
     setActivePeriodId,
-  } = useTipCalcStorage()
+  } = useTipCalcStorage(currentUser)
 
   const [showNewPeriodForm, setShowNewPeriodForm] = useState(false)
   const [newPeriodStart, setNewPeriodStart] = useState(
@@ -27,6 +39,32 @@ function App() {
   })
 
   const activePeriod = periods.find((p) => p.id === activePeriodId)
+
+  const handleAddUser = (username) => {
+    const trimmed = username.trim()
+    if (!trimmed) return
+    setCurrentUser(trimmed)
+  }
+
+  const handleSwitchUser = () => {
+    setCurrentUser(null)
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="app">
+        <header className="app-header app-header-minimal">
+          <img
+            src="/tru-bowl-logo.png"
+            alt="TRŪ Bowl Superfood Bar"
+            className="app-header-logo"
+          />
+          <h1>Tip Calculator</h1>
+        </header>
+        <UserScreen onAddUser={handleAddUser} />
+      </div>
+    )
+  }
 
   const handleCreatePeriod = (e) => {
     e.preventDefault()
@@ -68,6 +106,17 @@ function App() {
         />
         <div className="app-header-titles">
           <h1>Tip Calculator</h1>
+          <span className="app-header-user">
+            {formatDisplayName(currentUser)}
+            <button
+              type="button"
+              onClick={handleSwitchUser}
+              className="btn-switch-user"
+              aria-label="Switch user"
+            >
+              Switch user
+            </button>
+          </span>
         </div>
       </header>
 

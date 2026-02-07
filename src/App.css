@@ -69,6 +69,102 @@
   font-weight: 500;
 }
 
+.app-header-minimal {
+  justify-content: center;
+}
+
+.app-header-minimal h1 {
+  margin: 0;
+}
+
+.app-header-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.btn-switch-user {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+}
+
+.btn-switch-user:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+/* User screen */
+.user-screen {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.user-screen-card {
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  padding: 2rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+}
+
+.user-screen-card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.user-screen-hint {
+  margin: 0 0 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.user-screen-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.user-screen-input {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+}
+
+.user-screen-input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+.user-screen-continue {
+  padding: 0.75rem 1rem;
+  background: var(--black);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.user-screen-continue:hover {
+  background: var(--accent);
+}
+
 /* Layout */
 .app-layout {
   display: flex;
