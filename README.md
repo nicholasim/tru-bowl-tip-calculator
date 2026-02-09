@@ -6,12 +6,6 @@ My manager mentioned that manually calculating and distributing tips was taking 
 
 **Results:** The manager can now calculate and distribute tips much more easily. The store owner runs multiple locations, so the same app can be shared with other store managers to simplify tip handling across all stores.
 
-## About This Project
-
-My manager mentioned that manually calculating and distributing tips was taking a long time. I took the initiative and offered to build something that would make the task more efficient, easier to use, and would make the data easier to work with.
-
-**Results:** The manager can now calculate and distribute tips much more easily. The store owner runs multiple locations, so the same app can be shared with other store managers to simplify tip handling across all stores.
-
 ## Live Link
 
 **[TRŪ Bowl Tip Calculator](https://tru-bowl-tip-calculator.vercel.app/)** — try it in the browser (no install required).
