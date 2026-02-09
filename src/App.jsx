@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import './App.css'
-import { useTipCalcStorage, useLocalStorage } from './hooks/useLocalStorage'
+import { useTipCalcStorage } from './hooks/useLocalStorage'
 import { createPayPeriod, formatPeriodRange } from './lib/periodHelpers'
-import { STORAGE_KEYS } from './lib/constants'
 import { RosterManager } from './components/RosterManager'
 import { DayEntry } from './components/DayEntry'
 import { PeriodSummary } from './components/PeriodSummary'
@@ -17,7 +16,7 @@ function formatDisplayName(username) {
 }
 
 function App() {
-  const [currentUser, setCurrentUser] = useLocalStorage(STORAGE_KEYS.CURRENT_USER, null)
+  const [currentUser, setCurrentUser] = useState(null)
 
   const {
     roster,
