@@ -46,20 +46,23 @@ export function distributeTipsByHours(tips, hours) {
     })
   }
 
-  // Sort by remainder descending to assign extra pennies
-  const sortedByRemainder = [...exactAmounts].sort((a, b) => b.remainder - a.remainder)
+  // Sort by remainder descending; use index as tiebreaker so extra pennies aren't always given to the same person
+  const sortedByRemainder = [...exactAmounts].sort(
+    (a, b) => b.remainder - a.remainder || a.index - b.index
+  )
   const totalCents = Math.round(totalTips * 100)
   const flooredCents = exactAmounts.map((a) => Math.floor(a.exact * 100))
-  let assignedCents = flooredCents.reduce((s, c) => s + c, 0)
-  const toAssign = totalCents - assignedCents
+  const assignedCents = flooredCents.reduce((s, c) => s + c, 0)
+  const toAssign = Math.max(0, totalCents - assignedCents)
 
   for (let i = 0; i < toAssign; i++) {
     flooredCents[sortedByRemainder[i].index] += 1
   }
 
+  // Round to exact cents so displayed amounts and daily totals don't drift from floating point
   const shares = {}
   exactAmounts.forEach(({ employeeId }, i) => {
-    shares[employeeId] = flooredCents[i] / 100
+    shares[employeeId] = Math.round(flooredCents[i]) / 100
   })
 
   const distributedTotal = Object.values(shares).reduce((a, b) => a + b, 0)
@@ -76,23 +79,32 @@ export function distributeTipsByHours(tips, hours) {
 
 /**
  * Compute pay period totals from days.
+ * Sums in integer cents to avoid floating-point drift (e.g. 3–4 cents off over many days).
  *
  * @param {Array} days - Each { date, tips, hours }
  * @returns {Object} { byEmployee: { employeeId: total }, byDay: { date: { employeeId: share } } }
  */
 export function computePeriodTotals(days) {
-  const byEmployee = {}
+  const byEmployeeCents = {}
   const byDay = {}
 
   for (const day of days) {
     const { shares } = distributeTipsByHours(day.tips, day.hours)
-    byDay[day.date] = shares
-
-  for (const [employeeId, amount] of Object.entries(shares)) {
-    if (amount > 0) {
-      byEmployee[employeeId] = (byEmployee[employeeId] ?? 0) + amount
+    // Round each day's share to cents so table cells are exact
+    const dayShares = {}
+    for (const [employeeId, amount] of Object.entries(shares)) {
+      const cents = Math.round(amount * 100)
+      dayShares[employeeId] = cents / 100
+      if (cents > 0) {
+        byEmployeeCents[employeeId] = (byEmployeeCents[employeeId] ?? 0) + cents
+      }
     }
+    byDay[day.date] = dayShares
   }
+
+  const byEmployee = {}
+  for (const [employeeId, cents] of Object.entries(byEmployeeCents)) {
+    byEmployee[employeeId] = cents / 100
   }
 
   return { byEmployee, byDay }
