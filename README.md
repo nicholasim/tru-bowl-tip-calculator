@@ -21,7 +21,8 @@ The app now runs in production for the store. Because the store owner operates m
 
 | Layer | Technology |
 |---|---|
-| UI | React 19 + Vite, plain JavaScript and CSS (no UI framework) |
+| UI | React 19 + Vite |
+| Styling | Tailwind CSS + [shadcn/ui](https://ui.shadcn.com) components |
 | Backend | Supabase — PostgreSQL database, Auth, Row-Level Security |
 | Hosting | Vercel (auto-deploys on push to `main`) |
 | IDs | [`nanoid`](https://github.com/ai/nanoid) for client-generated record IDs |
@@ -40,6 +41,7 @@ The app now runs in production for the store. Because the store owner operates m
 - **Pay period summary** — a bar chart and an employee × day breakdown; employees who've since left the roster still show correctly as "Former employee" against their historical entries.
 - **Mobile-first responsive design** — the day × employee table collapses into per-employee cards with a collapsible daily breakdown, tip inputs stack full-width, and header actions tuck into a small menu — all sized for comfortable one-handed use on a phone.
 - **Data isolation** — every table is protected by Supabase Row-Level Security, so each manager only ever sees their own data.
+- **Dark/light mode** — toggle between themes from the header; defaults to dark, and your choice is saved so it persists across sessions.
 - **TRŪ Bowl branding** — pink (`#d76ba9`) and teal (`#35bfb0`) brand colors throughout.
 
 ## Getting Started
