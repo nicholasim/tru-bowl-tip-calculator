@@ -2,6 +2,19 @@ import { nanoid } from 'nanoid'
 import { DEFAULT_TIPS, BIWEEKLY_DAYS } from './constants'
 
 /**
+ * Default end date for a new pay period: BIWEEKLY_DAYS after startDate (inclusive).
+ * Single source of truth so the "new period" form can re-derive this whenever
+ * the start date changes, instead of leaving a stale end date in place.
+ * @param {string} startDate - ISO date string (YYYY-MM-DD)
+ * @returns {string} ISO date string
+ */
+export function defaultEndDate(startDate) {
+  const d = new Date(startDate + 'T00:00:00')
+  d.setDate(d.getDate() + BIWEEKLY_DAYS - 1)
+  return d.toISOString().slice(0, 10)
+}
+
+/**
  * @param {string} startDate - ISO date string (YYYY-MM-DD)
  * @param {string} [endDate] - Optional end date (YYYY-MM-DD). If omitted, 14 days from start.
  * @returns {Object} New pay period with days from start through end (inclusive)

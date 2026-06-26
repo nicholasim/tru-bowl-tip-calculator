@@ -198,6 +198,14 @@ export function DayEntry({ day, roster, onUpdate }) {
         </ul>
       </div>
 
+      {totalHours === 0 && totalTipsDisplay > 0 && (
+        <p className="day-unassigned-warning" role="alert">
+          ${totalTipsDisplay.toFixed(2)} in tips is entered but no employee has hours yet
+          for this day, so it won&apos;t be included in any totals. Add hours above to
+          distribute it.
+        </p>
+      )}
+
       {totalHours > 0 && totalTipsDisplay > 0 && (
         <div className="day-results">
           <p className="day-calc-summary">

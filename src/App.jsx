@@ -1,11 +1,17 @@
 import { useState } from 'react'
 import './App.css'
 import { useTipCalcStorage } from './hooks/useLocalStorage'
-import { createPayPeriod, formatPeriodRange } from './lib/periodHelpers'
+import { useAuth } from './hooks/useAuth'
+import { useSupabaseTipCalcStorage } from './hooks/useSupabaseStorage'
+import { signOut } from './lib/auth'
+import { clearLocalGuestData } from './lib/migrateLocalData'
+import { createPayPeriod, defaultEndDate, formatPeriodRange } from './lib/periodHelpers'
 import { RosterManager } from './components/RosterManager'
 import { DayEntry } from './components/DayEntry'
 import { PeriodSummary } from './components/PeriodSummary'
-import { UserScreen } from './components/UserScreen'
+import { AuthScreen } from './components/AuthScreen'
+
+const GUEST_NAME = 'Guest'
 
 function formatDisplayName(username) {
   return username
@@ -16,7 +22,14 @@ function formatDisplayName(username) {
 }
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(null)
+  const { user, profile, loading: authLoading } = useAuth()
+  const isAuthenticated = !!user
+
+  const [guestMode, setGuestMode] = useState(false)
+
+  const guestStorage = useTipCalcStorage(guestMode ? GUEST_NAME : null)
+  const cloudStorage = useSupabaseTipCalcStorage(isAuthenticated ? user.id : null)
+  const active = isAuthenticated ? cloudStorage : guestStorage
 
   const {
     roster,
@@ -25,28 +38,41 @@ function App() {
     setPeriods,
     activePeriodId,
     setActivePeriodId,
-  } = useTipCalcStorage(currentUser)
+  } = active
+
+  // Always display the roster alphabetically, regardless of insertion order.
+  const sortedRoster = [...roster].sort((a, b) => a.name.localeCompare(b.name))
 
   const [showNewPeriodForm, setShowNewPeriodForm] = useState(false)
   const [newPeriodStart, setNewPeriodStart] = useState(
     () => new Date().toISOString().slice(0, 10)
   )
-  const [newPeriodEnd, setNewPeriodEnd] = useState(() => {
-    const d = new Date()
-    d.setDate(d.getDate() + 13)
-    return d.toISOString().slice(0, 10)
-  })
+  const [newPeriodEnd, setNewPeriodEnd] = useState(() => defaultEndDate(newPeriodStart))
+
+  // Keep the end date in sync with the start date so a stale end date (from
+  // before the start was changed) can't silently span into extra months.
+  // A manually-picked end date is preserved as long as it's still >= start.
+  const handleStartDateChange = (value) => {
+    setNewPeriodStart(value)
+    setNewPeriodEnd((prevEnd) => (prevEnd && prevEnd >= value ? prevEnd : defaultEndDate(value)))
+  }
 
   const activePeriod = periods.find((p) => p.id === activePeriodId)
 
-  const handleAddUser = (username) => {
-    const trimmed = username.trim()
-    if (!trimmed) return
-    setCurrentUser(trimmed)
+  const handleContinueAsGuest = () => {
+    // Every guest session starts fresh, with no leftover data from a
+    // previous guest or prior session.
+    clearLocalGuestData()
+    setGuestMode(true)
   }
 
   const handleSwitchUser = () => {
-    setCurrentUser(null)
+    setGuestMode(false)
+  }
+
+  const handleSignOut = async () => {
+    await signOut()
+    setGuestMode(false)
   }
 
   const handleResetUser = () => {
@@ -56,21 +82,45 @@ function App() {
     setActivePeriodId(null)
   }
 
-  if (!currentUser) {
+  const minimalHeader = (
+    <header className="app-header app-header-minimal">
+      <img
+        src="/tru-bowl-logo.png"
+        alt="TRŪ Bowl Superfood Bar"
+        className="app-header-logo"
+      />
+      <h1>Tip Calculator</h1>
+    </header>
+  )
+
+  if (authLoading) {
     return (
       <div className="app">
-        <header className="app-header app-header-minimal">
-          <img
-            src="/tru-bowl-logo.png"
-            alt="TRŪ Bowl Superfood Bar"
-            className="app-header-logo"
-          />
-          <h1>Tip Calculator</h1>
-        </header>
-        <UserScreen onAddUser={handleAddUser} />
+        {minimalHeader}
+        <p className="empty-state">Loading…</p>
       </div>
     )
   }
+
+  if (!isAuthenticated && !guestMode) {
+    return (
+      <div className="app">
+        {minimalHeader}
+        <AuthScreen onContinueAsGuest={handleContinueAsGuest} />
+      </div>
+    )
+  }
+
+  if (isAuthenticated && cloudStorage.loading) {
+    return (
+      <div className="app">
+        {minimalHeader}
+        <p className="empty-state">Loading your data…</p>
+      </div>
+    )
+  }
+
+  const displayName = isAuthenticated ? (profile?.username ?? '') : GUEST_NAME
 
   const handleCreatePeriod = (e) => {
     e.preventDefault()
@@ -113,7 +163,7 @@ function App() {
         <div className="app-header-titles">
           <h1>Tip Calculator</h1>
           <span className="app-header-user">
-            {formatDisplayName(currentUser)}
+            {displayName ? formatDisplayName(displayName) : ''}
             <button
               type="button"
               onClick={handleResetUser}
@@ -122,21 +172,32 @@ function App() {
             >
               Reset
             </button>
-            <button
-              type="button"
-              onClick={handleSwitchUser}
-              className="btn-switch-user"
-              aria-label="Switch user"
-            >
-              Switch user
-            </button>
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="btn-switch-user"
+                aria-label="Sign out"
+              >
+                Sign out
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSwitchUser}
+                className="btn-switch-user"
+                aria-label="Switch user"
+              >
+                Switch user
+              </button>
+            )}
           </span>
         </div>
       </header>
 
       <div className="app-layout">
         <aside className="app-sidebar">
-          <RosterManager roster={roster} setRoster={setRoster} />
+          <RosterManager roster={sortedRoster} setRoster={setRoster} />
 
           <section className="period-selector">
             <h2>Pay Period</h2>
@@ -162,7 +223,7 @@ function App() {
                   <input
                     type="date"
                     value={newPeriodStart}
-                    onChange={(e) => setNewPeriodStart(e.target.value)}
+                    onChange={(e) => handleStartDateChange(e.target.value)}
                   />
                 </label>
                 <label>
@@ -213,7 +274,7 @@ function App() {
             </p>
           ) : (
             <>
-              <PeriodSummary period={activePeriod} roster={roster} />
+              <PeriodSummary period={activePeriod} roster={sortedRoster} />
 
               <section className="day-entries">
                 <h2>Daily Entry</h2>
@@ -221,7 +282,7 @@ function App() {
                   <DayEntry
                     key={day.date}
                     day={day}
-                    roster={roster}
+                    roster={sortedRoster}
                     onUpdate={(updated) => handleUpdateDay(i, updated)}
                   />
                 ))}

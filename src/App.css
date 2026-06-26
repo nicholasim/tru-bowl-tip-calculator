@@ -1,29 +1,28 @@
-/* TRŪ Bowl Tip Calculator - black & white theme */
+/* TRŪ Bowl Tip Calculator - brand theme (pink/teal on charcoal & white) */
 
 :root {
   --bg: #f5f5f5;
   --bg-panel: #ffffff;
   --bg-input: #fafafa;
   --border: #e0e0e0;
-  --border-focus: #000000;
-  --text: #0a0a0a;
+  --border-focus: #35bfb0;
+  --text: #1a1a1a;
   --text-muted: #525252;
   --text-light: #737373;
-  --black: #0a0a0a;
+  --black: #1a1a1a;
   --white: #ffffff;
-  --accent: #171717;
+  --dark: #1a1a1a;
+  --pink: #d76ba9;
+  --pink-dark: #b75b90;
+  --teal: #35bfb0;
+  --teal-dark: #2da296;
+  --teal-soft: #f0fafa;
   --accent-soft: #f5f5f5;
-  --green: #171717;
-  --green-soft: #f5f5f5;
-  --green-dark: #000000;
-  --chart-1: #404040;
-  --chart-2: #737373;
-  --chart-3: #525252;
-  --chart-4: #a3a3a3;
-  --radius: 10px;
-  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-sm: 8px;
+  --radius-lg: 12px;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
 
 .app {
@@ -32,9 +31,9 @@
   overflow-x: hidden;
 }
 
-/* Header - TRŪ Bowl black bar with logo */
+/* Header - TRŪ Bowl dark charcoal bar with logo */
 .app-header {
-  background: #000000;
+  background: var(--dark);
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
@@ -60,7 +59,7 @@
   margin: 0;
   font-size: 1.35rem;
   font-weight: 700;
-  color: var(--white);
+  color: var(--teal);
   letter-spacing: -0.02em;
 }
 
@@ -91,10 +90,10 @@
 .btn-switch-user {
   padding: 0.25rem 0.5rem;
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--pink);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 4px;
+  border: 1px solid var(--pink);
+  border-radius: var(--radius-sm);
 }
 
 .btn-reset-user {
@@ -103,27 +102,28 @@
 
 .btn-reset-user:hover,
 .btn-switch-user:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--pink);
   color: #fff;
 }
 
-/* User screen */
+/* Auth screen (login / create account / guest choice) */
 .user-screen {
   min-height: calc(100vh - 80px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  background: var(--dark);
 }
 
 .user-screen-card {
   background: var(--bg-panel);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   padding: 2rem;
   max-width: 400px;
   width: 100%;
   box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border);
+  border: none;
 }
 
 .user-screen-card h2 {
@@ -154,12 +154,13 @@
 
 .user-screen-input:focus {
   outline: none;
-  border-color: var(--border-focus);
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(53, 191, 176, 0.15);
 }
 
 .user-screen-continue {
   padding: 0.75rem 1rem;
-  background: var(--black);
+  background: var(--teal);
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
@@ -169,7 +170,85 @@
 }
 
 .user-screen-continue:hover {
-  background: var(--accent);
+  background: var(--teal-dark);
+}
+
+.user-screen-continue:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.auth-tab.active {
+  background: var(--teal);
+  color: #fff;
+}
+
+.auth-error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #b91c1c;
+}
+
+.auth-guest-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 1rem;
+  color: var(--text-light);
+  font-size: 0.8rem;
+}
+
+.auth-guest-divider::before,
+.auth-guest-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.auth-guest-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  color: var(--pink);
+  border: 1px solid var(--pink);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-guest-button:hover {
+  background: var(--pink);
+  color: #fff;
+}
+
+.auth-guest-hint {
+  margin: 0.6rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-light);
+  text-align: center;
 }
 
 /* Layout */
@@ -212,7 +291,7 @@
   margin: 0 0 1rem;
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   display: flex;
@@ -228,7 +307,7 @@
   display: inline-block;
   width: 3px;
   height: 1em;
-  background: var(--black);
+  background: var(--teal);
   border-radius: 2px;
 }
 
@@ -251,13 +330,13 @@
 
 .roster-add input:focus {
   outline: none;
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(53, 191, 176, 0.15);
 }
 
 .roster-add button {
   padding: 0.55rem 1rem;
-  background: var(--black);
+  background: var(--teal);
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
@@ -267,7 +346,7 @@
 }
 
 .roster-add button:hover {
-  background: var(--accent);
+  background: var(--teal-dark);
 }
 
 .roster-list {
@@ -300,7 +379,7 @@
   padding: 0.3rem 0.5rem;
   font-size: 0.8rem;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--bg-panel);
   color: var(--text-muted);
 }
@@ -315,7 +394,7 @@
   flex: 1;
   padding: 0.45rem 0.6rem;
   border: 1px solid var(--black);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
   background: var(--accent-soft);
 }
@@ -331,6 +410,20 @@
   margin: 0.5rem 0 0;
   font-size: 0.85rem;
   color: var(--text-light);
+}
+
+/* .roster-actions button is more specific than a bare .btn-remove would be,
+   so this must be scoped to .roster-actions to actually win the cascade. */
+.roster-actions .btn-remove {
+  color: var(--pink);
+  border-color: transparent;
+  background: transparent;
+}
+
+.roster-actions .btn-remove:hover {
+  background: rgba(215, 107, 169, 0.08);
+  color: var(--pink-dark);
+  border-color: transparent;
 }
 
 /* Period selector */
@@ -400,32 +493,32 @@
 .period-past-remove {
   padding: 0.3rem 0.5rem;
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--pink);
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .period-past-remove:hover {
-  color: #dc2626;
-  background: #fef2f2;
+  color: var(--pink-dark);
+  background: rgba(215, 107, 169, 0.08);
 }
 
 .btn-new-period {
   width: 100%;
   padding: 0.6rem;
-  border: 1px dashed var(--border);
+  border: 1px solid var(--teal);
   border-radius: var(--radius-sm);
-  background: var(--bg-input);
-  color: var(--text-muted);
+  background: transparent;
+  color: var(--teal);
   font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .btn-new-period:hover {
-  background: var(--accent-soft);
-  border-color: var(--black);
-  color: var(--black);
+  background: var(--teal);
+  color: #fff;
 }
 
 .new-period-form {
@@ -454,7 +547,7 @@
 .new-period-form button[type='submit'] {
   width: 100%;
   padding: 0.55rem;
-  background: var(--black);
+  background: var(--teal);
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
@@ -463,7 +556,7 @@
 }
 
 .new-period-form button[type='submit']:hover {
-  background: var(--accent);
+  background: var(--teal-dark);
 }
 
 /* Buttons */
@@ -483,15 +576,13 @@ button:hover {
   background: var(--bg-input);
 }
 
-.btn-remove {
-  color: #dc2626;
-  border-color: transparent;
-  background: transparent;
-}
-
-.btn-remove:hover {
-  background: #fef2f2;
-  color: #b91c1c;
+/* Focus ring - subtle teal, applied consistently to every input field */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(53, 191, 176, 0.15);
 }
 
 /* Empty state */
@@ -554,6 +645,7 @@ button:hover {
   height: 100%;
   border-radius: 4px;
   min-width: 4px;
+  background: linear-gradient(to right, var(--pink), var(--teal));
   transition: width 0.3s ease;
 }
 
@@ -588,11 +680,15 @@ button:hover {
 
 .summary-table th {
   font-weight: 600;
-  color: var(--text-muted);
-  background: var(--bg-input);
+  color: var(--white);
+  background: var(--dark);
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.summary-table tbody tr:nth-child(even) {
+  background: var(--teal-soft);
 }
 
 .summary-table .col-total {
@@ -652,14 +748,9 @@ button:hover {
   width: 6rem;
   padding: 0.4rem 0.5rem;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
   font-family: 'JetBrains Mono', monospace;
-}
-
-.day-tips input:focus {
-  outline: none;
-  border-color: var(--border-focus);
 }
 
 .day-tips-total {
@@ -699,14 +790,9 @@ button:hover {
   cursor: pointer;
 }
 
-.day-hours-select:focus {
-  outline: none;
-  border-color: var(--border-focus);
-}
-
 .btn-add-employee {
   padding: 0.5rem 1rem;
-  background: var(--black);
+  background: var(--teal);
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
@@ -717,7 +803,7 @@ button:hover {
 }
 
 .btn-add-employee:hover:not(:disabled) {
-  background: var(--accent);
+  background: var(--teal-dark);
 }
 
 .btn-add-employee:disabled {
@@ -761,14 +847,9 @@ button:hover {
   width: 5rem;
   padding: 0.4rem 0.5rem;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
   font-family: 'JetBrains Mono', monospace;
-}
-
-.day-hours-input:focus {
-  outline: none;
-  border-color: var(--border-focus);
 }
 
 .day-hours-unit {
@@ -780,16 +861,16 @@ button:hover {
   margin-left: auto;
   padding: 0.3rem 0.6rem;
   font-size: 0.8rem;
-  color: #dc2626;
+  color: var(--pink);
   border: none;
   background: transparent;
   cursor: pointer;
 }
 
 .btn-remove-inline:hover {
-  background: #fef2f2;
-  color: #b91c1c;
-  border-radius: 4px;
+  background: rgba(215, 107, 169, 0.08);
+  color: var(--pink-dark);
+  border-radius: var(--radius-sm);
 }
 
 .day-results {
@@ -825,9 +906,13 @@ button:hover {
 
 .day-shares-table th {
   font-weight: 600;
-  color: var(--text-muted);
-  background: var(--bg-input);
+  color: var(--white);
+  background: var(--dark);
   font-size: 0.8rem;
+}
+
+.day-shares-table tbody tr:nth-child(even) {
+  background: var(--teal-soft);
 }
 
 .day-shares-table td:last-child {
@@ -852,6 +937,17 @@ button:hover {
 
 .day-reconciled.warning {
   color: #d97706;
+}
+
+.day-unassigned-warning {
+  margin: 0.75rem 0 0;
+  padding: 0.6rem 0.8rem;
+  background: #fff7ed;
+  border: 1px solid #fde0b2;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #b45309;
 }
 
 /* Mobile & tablet responsive */

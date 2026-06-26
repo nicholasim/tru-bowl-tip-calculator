@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp \"C:\\\\Users\\\\Nicholas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Nicholas-Projects-tru-bowl-tip-calculator\\\\27769043-cec2-4129-b087-570c1f46cdec\\\\scratchpad\\\\auth-probe.mjs\" \"c:\\\\Users\\\\Nicholas\\\\Projects\\\\tru-bowl-tip-calculator\\\\auth-probe.mjs\")",
+      "Bash(node auth-probe.mjs)",
+      "Bash(node verify-auth-flow-fixes.js)",
+      "PowerShell(Stop-Process -Id 13864 -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(\"stopped\")",
+      "Bash(node verify-guest-fresh.js)",
+      "PowerShell(Stop-Process -Id 21428 -Force -ErrorAction SilentlyContinue)",
+      "Bash(node verify-rebrand.js)",
+      "Bash(node verify-rebrand2.js)",
+      "PowerShell(Stop-Process -Id 30584 -Force -ErrorAction SilentlyContinue)"
+    ]
+  }
+}
