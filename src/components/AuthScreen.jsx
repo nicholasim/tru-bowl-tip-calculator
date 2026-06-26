@@ -159,7 +159,7 @@ export function AuthScreen({ onContinueAsGuest }) {
           Continue as Guest
         </Button>
         <p className="mt-2 text-center text-xs text-white/50">
-          Guest data stays on this device only and isn&apos;t saved to the cloud.
+          One time use.
         </p>
       </div>
     </div>
