@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['.next', 'dist']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
@@ -15,7 +15,10 @@ export default defineConfig([
     ],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      // process.env.NEXT_PUBLIC_* is the standard way Next.js client code
+      // reads env vars (statically inlined at build time), so `process`
+      // needs to be a recognized global alongside the browser ones.
+      globals: { ...globals.browser, process: 'readonly' },
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },

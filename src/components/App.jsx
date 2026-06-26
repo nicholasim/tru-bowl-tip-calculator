@@ -1,17 +1,19 @@
+'use client'
+
 import { useState, useEffect, useRef } from 'react'
 import { MoreVertical, Plus, Trash2, X } from 'lucide-react'
-import { useTipCalcStorage } from './hooks/useLocalStorage'
-import { useAuth } from './hooks/useAuth'
-import { useSupabaseTipCalcStorage } from './hooks/useSupabaseStorage'
-import { useTheme } from './hooks/useTheme'
-import { signOut } from './lib/auth'
-import { clearLocalGuestData } from './lib/migrateLocalData'
-import { createPayPeriod, defaultEndDate, formatPeriodRange } from './lib/periodHelpers'
-import { RosterManager } from './components/RosterManager'
-import { DayEntry } from './components/DayEntry'
-import { PeriodSummary } from './components/PeriodSummary'
-import { AuthScreen } from './components/AuthScreen'
-import { ThemeToggle } from './components/ThemeToggle'
+import { useTipCalcStorage } from '@/hooks/useLocalStorage'
+import { useAuth } from '@/hooks/useAuth'
+import { useSupabaseTipCalcStorage } from '@/hooks/useSupabaseStorage'
+import { useTheme } from '@/hooks/useTheme'
+import { signOut } from '@/lib/auth'
+import { clearLocalGuestData } from '@/lib/migrateLocalData'
+import { createPayPeriod, defaultEndDate, formatPeriodRange } from '@/lib/periodHelpers'
+import { RosterManager } from '@/components/RosterManager'
+import { DayEntry } from '@/components/DayEntry'
+import { PeriodSummary } from '@/components/PeriodSummary'
+import { AuthScreen } from '@/components/AuthScreen'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -28,7 +30,7 @@ function formatDisplayName(username) {
     .join(' ')
 }
 
-function App() {
+export function App() {
   const { user, profile, loading: authLoading } = useAuth()
   const isAuthenticated = !!user
   const { theme, toggleTheme } = useTheme()
@@ -443,5 +445,3 @@ function App() {
     </div>
   )
 }
-
-export default App

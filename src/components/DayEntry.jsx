@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useMemo } from 'react'
 import { distributeTipsByHours } from '../utils/calculations'
 import { formatDate } from '../lib/periodHelpers'

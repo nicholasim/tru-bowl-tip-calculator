@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import { signInWithUsername, signUpWithUsername } from '../lib/auth'
 import { cn } from '@/lib/utils'

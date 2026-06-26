@@ -1,3 +1,5 @@
+'use client'
+
 import { useMemo } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { computePeriodTotals } from '../utils/calculations'

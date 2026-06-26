@@ -1,7 +1,7 @@
 # TRŪ Bowl Tip Calculator
 
+![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=next.js&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20Auth-3ECF8E?logo=supabase&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000000?logo=vercel&logoColor=white)
 
@@ -21,7 +21,7 @@ The app now runs in production for the store. Because the store owner operates m
 
 | Layer | Technology |
 |---|---|
-| UI | React 19 + Vite |
+| Framework | Next.js 15 (App Router) + React 19 |
 | Styling | Tailwind CSS + [shadcn/ui](https://ui.shadcn.com) components |
 | Backend | Supabase — PostgreSQL database, Auth, Row-Level Security |
 | Hosting | Vercel (auto-deploys on push to `main`) |
@@ -67,8 +67,8 @@ npm install
 4. Copy your project's API URL and anon key into a `.env` file (see `.env.example`):
 
    ```bash
-   VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
    ```
 
 ### 3. Run it
@@ -77,44 +77,51 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) and either continue as a guest or create an account.
+Open [http://localhost:3000](http://localhost:3000) and either continue as a guest or create an account.
 
 ### Available scripts
 
 | Command | Description |
 |---|---|
 | `npm run dev` | Start the dev server |
-| `npm run build` | Production build to `dist/` |
-| `npm run preview` | Preview the production build locally |
+| `npm run build` | Production build |
+| `npm run start` | Serve the production build locally |
 | `npm run test` | Run the test suite (Vitest) |
 | `npm run lint` | Run ESLint |
 
 ### Deploying
 
-The live site is deployed on Vercel: import the repo and Vercel auto-detects the Vite build (`npm run build`, output directory `dist`). Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as environment variables in the Vercel project settings so authenticated accounts work in production — guest mode needs no configuration there. Every push to `main` redeploys automatically.
+The live site is deployed on Vercel: import the repo and Vercel auto-detects the Next.js build, zero config needed. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as environment variables in the Vercel project settings so authenticated accounts work in production — guest mode needs no configuration there. Every push to `main` redeploys automatically.
 
 ## Project Structure
 
 ```
 src/
-├── App.jsx                  # Mode switching (guest/auth), layout, top-level state
-├── App.css                  # Styles, brand theme, responsive breakpoints
+├── app/
+│   ├── layout.js             # Root layout: <html>/<body>, metadata, theme-init script
+│   ├── page.js                # The single route (/); loads App client-only (no SSR)
+│   └── globals.css            # Tailwind directives, brand theme (light/dark CSS vars)
 ├── components/
-│   ├── AuthScreen.jsx        # Log in / create account / continue-as-guest
-│   ├── RosterManager.jsx     # Add, edit, and remove employees
-│   ├── DayEntry.jsx          # Per-day tip entry and hours
-│   ├── PeriodSummary.jsx     # Summary table (desktop) / cards (mobile) + chart
-│   └── TipDistributionChart.jsx
+│   ├── App.jsx                 # Mode switching (guest/auth), layout, top-level state
+│   ├── AuthScreen.jsx           # Log in / create account / continue-as-guest
+│   ├── RosterManager.jsx        # Add, edit, and remove employees
+│   ├── DayEntry.jsx             # Per-day tip entry and hours
+│   ├── PeriodSummary.jsx        # Summary table (desktop) / cards (mobile) + chart
+│   ├── TipDistributionChart.jsx
+│   ├── ThemeToggle.jsx          # Dark/light mode toggle button
+│   └── ui/                      # shadcn/ui primitives (Button, Card, Input, Badge, Label)
 ├── hooks/
 │   ├── useLocalStorage.js    # Guest-mode persistence, user-scoped keys
 │   ├── useAuth.js            # Supabase session + profile state
-│   └── useSupabaseStorage.js # Authenticated-mode persistence (Supabase)
+│   ├── useSupabaseStorage.js # Authenticated-mode persistence (Supabase)
+│   └── useTheme.js           # Dark/light theme state, persisted to localStorage
 ├── lib/
 │   ├── constants.js          # Storage keys, userKey()
 │   ├── periodHelpers.js      # Date ranges, createPayPeriod()
 │   ├── supabaseClient.js     # Supabase client instance
 │   ├── auth.js               # signUpWithUsername / signInWithUsername / signOut
-│   └── migrateLocalData.js   # One-time guest -> Supabase migration on signup
+│   ├── migrateLocalData.js   # One-time guest -> Supabase migration on signup
+│   └── utils.js               # cn() class-merging helper for shadcn/ui
 └── utils/
     └── calculations.js       # distributeTipsByHours, computePeriodTotals
 
