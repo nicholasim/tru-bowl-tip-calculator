@@ -5,6 +5,14 @@
     <link rel="icon" type="image/jpeg" href="/TruBowlLogo.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TRŪ Bowl Tip Calculator</title>
+    <script>
+      // Applied before paint so there's no flash of the wrong theme on load.
+      (function () {
+        var stored = localStorage.getItem('tipcalc_theme')
+        var theme = stored === 'light' || stored === 'dark' ? stored : 'dark'
+        document.documentElement.classList.toggle('dark', theme === 'dark')
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

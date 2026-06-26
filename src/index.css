@@ -1,35 +1,96 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: 'Sora', system-ui, sans-serif;
-  font-size: 15px;
-  line-height: 1.6;
-  color: #1e293b;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@layer base {
+  :root {
+    /* Light theme */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 173 56% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 180 60% 95%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 326 57% 63%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 173 56% 48%;
+    --radius: 0.75rem;
+  }
 
-#root {
-  min-height: 100vh;
-}
+  .dark {
+    /* Dark theme - app background sits a touch darker than the cards/header
+       so panels read as "raised" against it. */
+    --background: 0 0% 6%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 173 56% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 173 30% 16%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 326 57% 63%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 22%;
+    --ring: 173 56% 48%;
+  }
 
-input,
-select,
-button {
-  font-family: inherit;
-}
+  * {
+    @apply border-border;
+  }
 
-/* Prevent zoom on input focus (iOS) - 16px minimum */
-@media (max-width: 768px) {
+  :root {
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+    font-family: 'Sora', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+
   input,
-  select {
-    font-size: max(1rem, 16px);
+  select,
+  button {
+    font-family: inherit;
+  }
+
+  /* Prevent zoom on input focus (iOS) - 16px minimum */
+  @media (max-width: 768px) {
+    input,
+    select {
+      font-size: max(1rem, 16px);
+    }
   }
 }

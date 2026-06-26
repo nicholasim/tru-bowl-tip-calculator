@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import './App.css'
+import { MoreVertical, Plus, Trash2, X } from 'lucide-react'
 import { useTipCalcStorage } from './hooks/useLocalStorage'
 import { useAuth } from './hooks/useAuth'
 import { useSupabaseTipCalcStorage } from './hooks/useSupabaseStorage'
+import { useTheme } from './hooks/useTheme'
 import { signOut } from './lib/auth'
 import { clearLocalGuestData } from './lib/migrateLocalData'
 import { createPayPeriod, defaultEndDate, formatPeriodRange } from './lib/periodHelpers'
@@ -10,6 +11,12 @@ import { RosterManager } from './components/RosterManager'
 import { DayEntry } from './components/DayEntry'
 import { PeriodSummary } from './components/PeriodSummary'
 import { AuthScreen } from './components/AuthScreen'
+import { ThemeToggle } from './components/ThemeToggle'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
 const GUEST_NAME = 'Guest'
 
@@ -24,6 +31,7 @@ function formatDisplayName(username) {
 function App() {
   const { user, profile, loading: authLoading } = useAuth()
   const isAuthenticated = !!user
+  const { theme, toggleTheme } = useTheme()
 
   const [guestMode, setGuestMode] = useState(false)
 
@@ -99,28 +107,30 @@ function App() {
   }
 
   const minimalHeader = (
-    <header className="app-header app-header-minimal">
+    <header className="flex items-center justify-center gap-4 border-b-2 border-primary/50 bg-brand-charcoal px-4 py-4">
       <img
         src="/tru-bowl-logo.png"
         alt="TRŪ Bowl Superfood Bar"
-        className="app-header-logo"
+        className="h-10 w-auto object-contain"
       />
-      <h1>Tip Calculator</h1>
+      <h1 className="m-0 text-xl font-bold tracking-tight text-primary">Tip Calculator</h1>
     </header>
   )
 
   if (authLoading) {
     return (
-      <div className="app">
+      <div className="min-h-screen bg-background">
         {minimalHeader}
-        <p className="empty-state">Loading…</p>
+        <p className="m-6 rounded-xl border-2 border-dashed border-border bg-card p-12 text-center text-muted-foreground">
+          Loading…
+        </p>
       </div>
     )
   }
 
   if (!isAuthenticated && !guestMode) {
     return (
-      <div className="app">
+      <div className="min-h-screen bg-background">
         {minimalHeader}
         <AuthScreen onContinueAsGuest={handleContinueAsGuest} />
       </div>
@@ -129,9 +139,11 @@ function App() {
 
   if (isAuthenticated && cloudStorage.loading) {
     return (
-      <div className="app">
+      <div className="min-h-screen bg-background">
         {minimalHeader}
-        <p className="empty-state">Loading your data…</p>
+        <p className="m-6 rounded-xl border-2 border-dashed border-border bg-card p-12 text-center text-muted-foreground">
+          Loading your data…
+        </p>
       </div>
     )
   }
@@ -174,66 +186,81 @@ function App() {
   const pastPeriods = periods.filter((p) => p.id !== activePeriodId)
 
   return (
-    <div className="app">
-      <header className="app-header">
+    <div className="min-h-screen bg-background">
+      <header className="flex flex-wrap items-center gap-3 border-b-2 border-primary/50 bg-brand-charcoal px-4 py-3 sm:gap-5 sm:px-8">
         <img
           src="/tru-bowl-logo.png"
           alt="TRŪ Bowl Superfood Bar"
-          className="app-header-logo"
+          className="h-9 w-auto object-contain sm:h-12"
         />
-        <div className="app-header-titles">
-          <h1>Tip Calculator</h1>
-          <span className="app-header-user" ref={userMenuRef}>
-            <span className="app-header-username">
-              {displayName ? formatDisplayName(displayName) : ''}
-            </span>
+        <div className="flex flex-1 flex-wrap items-baseline gap-3">
+          <h1 className="m-0 text-lg font-bold tracking-tight text-primary sm:text-2xl">
+            Tip Calculator
+          </h1>
 
-            <span className="app-header-actions">
-              <button
+          <div ref={userMenuRef} className="relative ml-auto flex items-center gap-2 sm:gap-3">
+            <Badge variant="secondary" className="bg-white/10 text-white">
+              {displayName ? formatDisplayName(displayName) : ''}
+            </Badge>
+
+            <div className="hidden items-center gap-2 sm:flex">
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={handleResetUser}
-                className="btn-reset-user"
                 aria-label="Reset user data"
+                className="border-brand-pink text-brand-pink hover:bg-brand-pink hover:text-white"
               >
                 Reset
-              </button>
+              </Button>
               {isAuthenticated ? (
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={handleSignOut}
-                  className="btn-switch-user"
                   aria-label="Sign out"
+                  className="border-brand-pink text-brand-pink hover:bg-brand-pink hover:text-white"
                 >
                   Sign out
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={handleSwitchUser}
-                  className="btn-switch-user"
                   aria-label="Switch user"
+                  className="border-brand-pink text-brand-pink hover:bg-brand-pink hover:text-white"
                 >
                   Switch user
-                </button>
+                </Button>
               )}
-            </span>
+            </div>
 
-            <button
+            <Button
               type="button"
-              className="app-header-menu-toggle"
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/10 hover:text-white sm:hidden"
               aria-label="More options"
               aria-haspopup="true"
               aria-expanded={userMenuOpen}
               onClick={() => setUserMenuOpen((v) => !v)}
             >
-              ⋮
-            </button>
+              <MoreVertical className="size-5" />
+            </Button>
 
             {userMenuOpen && (
-              <div className="app-header-menu" role="menu">
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-20 mt-2 flex min-w-[160px] flex-col overflow-hidden rounded-md border border-border bg-popover shadow-lg"
+              >
                 <button
                   type="button"
                   role="menuitem"
+                  className="min-h-11 px-4 py-2 text-left text-sm text-popover-foreground hover:bg-accent"
                   onClick={() => {
                     setUserMenuOpen(false)
                     handleResetUser()
@@ -245,6 +272,7 @@ function App() {
                   <button
                     type="button"
                     role="menuitem"
+                    className="min-h-11 px-4 py-2 text-left text-sm text-popover-foreground hover:bg-accent"
                     onClick={() => {
                       setUserMenuOpen(false)
                       handleSignOut()
@@ -256,6 +284,7 @@ function App() {
                   <button
                     type="button"
                     role="menuitem"
+                    className="min-h-11 px-4 py-2 text-left text-sm text-popover-foreground hover:bg-accent"
                     onClick={() => {
                       setUserMenuOpen(false)
                       handleSwitchUser()
@@ -266,111 +295,146 @@ function App() {
                 )}
               </div>
             )}
-          </span>
+
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
+          </div>
         </div>
       </header>
 
-      <div className="app-layout">
-        <aside className="app-sidebar">
+      <div className="mx-auto flex max-w-[1320px] flex-col gap-4 p-4 sm:flex-row sm:gap-6 sm:p-8">
+        <aside className="flex flex-col gap-4 sm:w-[300px] sm:flex-none">
           <RosterManager roster={sortedRoster} setRoster={setRoster} />
 
-          <section className="period-selector">
-            <h2>Pay Period</h2>
-            {activePeriod ? (
-              <p className="period-current">
-                <span>
-                  <span className="period-current-label">Current:</span>{' '}
-                  {formatPeriodRange(activePeriod.startDate, activePeriod.endDate)}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleRemovePeriod(activePeriod.id)}
-                  className="period-current-remove"
-                  aria-label={`Delete ${formatPeriodRange(activePeriod.startDate, activePeriod.endDate)}`}
-                >
-                  Delete
-                </button>
-              </p>
-            ) : (
-              <p className="period-none">No pay period selected.</p>
-            )}
-            <button
-              type="button"
-              onClick={() => setShowNewPeriodForm((v) => !v)}
-              className="btn-new-period"
-            >
-              {showNewPeriodForm ? 'Cancel' : 'New pay period'}
-            </button>
-            {showNewPeriodForm && (
-              <form onSubmit={handleCreatePeriod} className="new-period-form">
-                <label>
-                  Start date
-                  <input
-                    type="date"
-                    value={newPeriodStart}
-                    onChange={(e) => handleStartDateChange(e.target.value)}
-                  />
-                </label>
-                <label>
-                  End date
-                  <input
-                    type="date"
-                    value={newPeriodEnd}
-                    min={newPeriodStart}
-                    onChange={(e) => setNewPeriodEnd(e.target.value)}
-                  />
-                </label>
-                <button type="submit">Create</button>
-              </form>
-            )}
-            {pastPeriods.length > 0 && (
-              <div className="period-past">
-                <h3>Past pay periods</h3>
-                <ul className="period-past-list">
-                  {pastPeriods.map((p) => (
-                    <li key={p.id} className="period-past-item">
-                      <button
-                        type="button"
-                        onClick={() => setActivePeriodId(p.id)}
-                        className="period-past-open"
+          <Card className="rounded-xl shadow-sm">
+            <CardHeader>
+              <CardTitle>Pay Period</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              {activePeriod ? (
+                <div className="flex items-center justify-between gap-2 text-sm">
+                  <span>
+                    <span className="font-semibold text-muted-foreground">Current:</span>{' '}
+                    {formatPeriodRange(activePeriod.startDate, activePeriod.endDate)}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleRemovePeriod(activePeriod.id)}
+                    aria-label={`Delete ${formatPeriodRange(activePeriod.startDate, activePeriod.endDate)}`}
+                    className="shrink-0 text-brand-pink hover:bg-brand-pink/10 hover:text-brand-pink-dark"
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No pay period selected.</p>
+              )}
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowNewPeriodForm((v) => !v)}
+                className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+              >
+                {showNewPeriodForm ? (
+                  <>
+                    <X className="size-4" /> Cancel
+                  </>
+                ) : (
+                  <>
+                    <Plus className="size-4" /> New pay period
+                  </>
+                )}
+              </Button>
+
+              {showNewPeriodForm && (
+                <form onSubmit={handleCreatePeriod} className="flex flex-col gap-3 border-t border-border pt-3">
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="new-period-start">Start date</Label>
+                    <Input
+                      id="new-period-start"
+                      type="date"
+                      value={newPeriodStart}
+                      onChange={(e) => handleStartDateChange(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="new-period-end">End date</Label>
+                    <Input
+                      id="new-period-end"
+                      type="date"
+                      value={newPeriodEnd}
+                      min={newPeriodStart}
+                      onChange={(e) => setNewPeriodEnd(e.target.value)}
+                    />
+                  </div>
+                  <Button type="submit" className="w-full">
+                    Create
+                  </Button>
+                </form>
+              )}
+
+              {pastPeriods.length > 0 && (
+                <div className="flex flex-col gap-1 border-t border-border pt-3">
+                  <h3 className="m-0 mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Past pay periods
+                  </h3>
+                  <ul className="m-0 flex list-none flex-col p-0">
+                    {pastPeriods.map((p) => (
+                      <li
+                        key={p.id}
+                        className="flex items-center justify-between gap-2 border-b border-border py-1 last:border-b-0"
                       >
-                        {formatPeriodRange(p.startDate, p.endDate)}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRemovePeriod(p.id)}
-                        className="period-past-remove"
-                        aria-label={`Delete ${formatPeriodRange(p.startDate, p.endDate)}`}
-                      >
-                        Delete
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </section>
+                        <button
+                          type="button"
+                          onClick={() => setActivePeriodId(p.id)}
+                          className="min-h-11 flex-1 rounded-md px-2 text-left text-sm font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                        >
+                          {formatPeriodRange(p.startDate, p.endDate)}
+                        </button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemovePeriod(p.id)}
+                          aria-label={`Delete ${formatPeriodRange(p.startDate, p.endDate)}`}
+                          className="shrink-0 text-brand-pink hover:bg-brand-pink/10 hover:text-brand-pink-dark"
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </aside>
 
-        <main className="app-main">
+        <main className="min-w-0 flex-1">
           {!activePeriod ? (
-            <p className="empty-state">
+            <p className="rounded-xl border-2 border-dashed border-border bg-card p-12 text-center text-muted-foreground">
               Create or select a pay period to start entering tips.
             </p>
           ) : (
             <>
               <PeriodSummary period={activePeriod} roster={sortedRoster} />
 
-              <section className="day-entries">
-                <h2>Daily Entry</h2>
-                {activePeriod.days.map((day, i) => (
-                  <DayEntry
-                    key={day.date}
-                    day={day}
-                    roster={sortedRoster}
-                    onUpdate={(updated) => handleUpdateDay(i, updated)}
-                  />
-                ))}
+              <section className="mt-6">
+                <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-foreground before:inline-block before:h-3.5 before:w-[3px] before:rounded-sm before:bg-primary">
+                  Daily Entry
+                </h2>
+                <div className="flex flex-col gap-4">
+                  {activePeriod.days.map((day, i) => (
+                    <DayEntry
+                      key={day.date}
+                      day={day}
+                      roster={sortedRoster}
+                      onUpdate={(updated) => handleUpdateDay(i, updated)}
+                    />
+                  ))}
+                </div>
               </section>
             </>
           )}

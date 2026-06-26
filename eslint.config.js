@@ -26,4 +26,13 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    // shadcn/ui primitives conventionally co-export a cva `*Variants` helper
+    // alongside the component (e.g. buttonVariants), which fast-refresh's
+    // "only export components" rule otherwise flags.
+    files: ['src/components/ui/**/*.{js,jsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

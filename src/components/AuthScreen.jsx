@@ -1,5 +1,11 @@
 import { useState } from 'react'
 import { signInWithUsername, signUpWithUsername } from '../lib/auth'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+
+const glassInputClass =
+  'border-white/15 bg-black/20 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_rgba(53,191,176,0.25)]'
 
 export function AuthScreen({ onContinueAsGuest }) {
   const [mode, setMode] = useState('login')
@@ -47,14 +53,24 @@ export function AuthScreen({ onContinueAsGuest }) {
   }
 
   return (
-    <div className="user-screen">
-      <div className="user-screen-card">
-        <div className="auth-tabs" role="tablist">
+    <div className="relative flex min-h-[calc(100vh-72px)] items-center justify-center overflow-hidden bg-brand-charcoal p-4 sm:p-8">
+      {/* Decorative brand-colored glow - the login screen keeps this fixed
+          dark look regardless of the app's light/dark theme setting. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(53,191,176,0.20),transparent_55%),radial-gradient(circle_at_80%_75%,rgba(215,107,169,0.20),transparent_55%)]"
+      />
+
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-white/[0.06] p-8 shadow-2xl backdrop-blur-xl">
+        <div role="tablist" className="mb-5 flex gap-1 rounded-lg bg-black/30 p-1">
           <button
             type="button"
             role="tab"
             aria-selected={mode === 'login'}
-            className={`auth-tab ${mode === 'login' ? 'active' : ''}`}
+            className={cn(
+              'min-h-10 flex-1 rounded-md px-3 py-2 text-sm font-semibold transition-colors',
+              mode === 'login' ? 'bg-primary text-primary-foreground' : 'text-white/70 hover:text-white'
+            )}
             onClick={() => switchMode('login')}
           >
             Log In
@@ -63,21 +79,24 @@ export function AuthScreen({ onContinueAsGuest }) {
             type="button"
             role="tab"
             aria-selected={mode === 'signup'}
-            className={`auth-tab ${mode === 'signup' ? 'active' : ''}`}
+            className={cn(
+              'min-h-10 flex-1 rounded-md px-3 py-2 text-sm font-semibold transition-colors',
+              mode === 'signup' ? 'bg-primary text-primary-foreground' : 'text-white/70 hover:text-white'
+            )}
             onClick={() => switchMode('signup')}
           >
             Create Account
           </button>
         </div>
 
-        <p className="user-screen-hint">
+        <p className="mb-6 text-sm text-white/70">
           {mode === 'login'
             ? 'Log in to access your tip data from any device.'
             : 'Create an account to save your tip data to the cloud.'}
         </p>
 
-        <form onSubmit={handleSubmit} className="user-screen-form">
-          <input
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <Input
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -85,36 +104,36 @@ export function AuthScreen({ onContinueAsGuest }) {
             autoComplete="username"
             autoFocus
             aria-label="Username"
-            className="user-screen-input"
+            className={glassInputClass}
           />
-          <input
+          <Input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
             autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
             aria-label="Password"
-            className="user-screen-input"
+            className={glassInputClass}
           />
           {mode === 'signup' && (
-            <input
+            <Input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm password"
               autoComplete="new-password"
               aria-label="Confirm password"
-              className="user-screen-input"
+              className={glassInputClass}
             />
           )}
 
           {error && (
-            <p className="auth-error" role="alert">
+            <p className="text-sm font-medium text-brand-pink" role="alert">
               {error}
             </p>
           )}
 
-          <button type="submit" className="user-screen-continue" disabled={submitting}>
+          <Button type="submit" disabled={submitting} className="mt-1 w-full">
             {submitting
               ? mode === 'signup'
                 ? 'Creating account…'
@@ -122,17 +141,24 @@ export function AuthScreen({ onContinueAsGuest }) {
               : mode === 'signup'
                 ? 'Create Account'
                 : 'Log In'}
-          </button>
+          </Button>
         </form>
 
-        <div className="auth-guest-divider">
+        <div className="my-5 flex items-center gap-3 text-xs text-white/50">
+          <span className="h-px flex-1 bg-white/15" />
           <span>or</span>
+          <span className="h-px flex-1 bg-white/15" />
         </div>
 
-        <button type="button" className="auth-guest-button" onClick={onContinueAsGuest}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onContinueAsGuest}
+          className="w-full border-brand-pink text-brand-pink hover:bg-brand-pink hover:text-white"
+        >
           Continue as Guest
-        </button>
-        <p className="auth-guest-hint">
+        </Button>
+        <p className="mt-2 text-center text-xs text-white/50">
           Guest data stays on this device only and isn&apos;t saved to the cloud.
         </p>
       </div>

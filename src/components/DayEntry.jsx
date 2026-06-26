@@ -3,6 +3,11 @@ import { distributeTipsByHours } from '../utils/calculations'
 import { formatDate } from '../lib/periodHelpers'
 import { DEFAULT_TIPS } from '../lib/constants'
 import { TipDistributionChart } from './TipDistributionChart'
+import { cn } from '@/lib/utils'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 /** Allow only digits and at most one decimal point; optional max decimal places */
 function toNumericInput(value, maxDecimals = 2) {
@@ -98,152 +103,209 @@ export function DayEntry({ day, roster, onUpdate }) {
   const availableToAdd = roster.filter((e) => hours[e.id] === undefined)
 
   return (
-    <article className="day-entry">
-      <h3 className="day-date">{formatDate(day.date)}</h3>
+    <Card className="rounded-xl shadow-sm">
+      <CardContent className="p-5">
+        <h3 className="mb-4 text-base font-bold text-foreground">{formatDate(day.date)}</h3>
 
-      <div className="day-tips">
-        <label>
-          Cash $
-          <input
-            type="text"
-            inputMode="decimal"
-            placeholder="0.00"
-            value={tips.cash === 0 || tips.cash === '0' ? '' : String(tips.cash)}
-            onChange={(e) => handleTipChange('cash', e.target.value)}
-          />
-        </label>
-        <label>
-          App $
-          <input
-            type="text"
-            inputMode="decimal"
-            placeholder="0.00"
-            value={tips.app === 0 || tips.app === '0' ? '' : String(tips.app)}
-            onChange={(e) => handleTipChange('app', e.target.value)}
-          />
-        </label>
-        <label>
-          Credit $
-          <input
-            type="text"
-            inputMode="decimal"
-            placeholder="0.00"
-            value={tips.creditCard === 0 || tips.creditCard === '0' ? '' : String(tips.creditCard)}
-            onChange={(e) => handleTipChange('creditCard', e.target.value)}
-          />
-        </label>
-        <span className="day-tips-total">
-          Total: ${totalTipsDisplay.toFixed(2)}
-        </span>
-      </div>
-
-      <div className="day-hours">
-        <h4>Employees who worked</h4>
-        <div className="day-hours-add">
-          <select
-            value={selectedEmployeeId}
-            onChange={(e) => setSelectedEmployeeId(e.target.value)}
-            aria-label="Select employee"
-            className="day-hours-select"
-          >
-            <option value="">Select employee…</option>
-            {availableToAdd.map((emp) => (
-              <option key={emp.id} value={emp.id}>
-                {emp.name}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={addEmployee}
-            disabled={!selectedEmployeeId}
-            className="btn-add-employee"
-          >
-            Add
-          </button>
-        </div>
-        {roster.length === 0 && (
-          <p className="day-hours-hint">Add employees to the roster first.</p>
-        )}
-        {employeesOnDay.length === 0 && roster.length > 0 && (
-          <p className="day-hours-hint">Select an employee above and click Add.</p>
-        )}
-        <ul className="day-hours-list">
-          {employeesOnDay.map((employeeId) => {
-            const name = rosterMap[employeeId]?.name ?? 'Unknown'
-            return (
-              <li key={employeeId} className="day-hours-row">
-                <span className="day-hours-name">{name}</span>
-                <input
+        <div className="mb-4 rounded-lg bg-muted/40 p-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor={`cash-${day.date}`}>Cash</Label>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  $
+                </span>
+                <Input
+                  id={`cash-${day.date}`}
                   type="text"
                   inputMode="decimal"
-                  value={hours[employeeId] == null || hours[employeeId] === '' || hours[employeeId] === 0 ? '' : String(hours[employeeId])}
-                  onChange={(e) => handleHoursChange(employeeId, e.target.value)}
                   placeholder="0.00"
-                  className="day-hours-input"
-                  aria-label={`Hours for ${name}`}
+                  value={tips.cash === 0 || tips.cash === '0' ? '' : String(tips.cash)}
+                  onChange={(e) => handleTipChange('cash', e.target.value)}
+                  className="h-12 pl-7 font-mono text-base"
                 />
-                <span className="day-hours-unit">hrs</span>
-                <button
-                  type="button"
-                  onClick={() => removeEmployee(employeeId)}
-                  className="btn-remove-inline"
-                  aria-label={`Remove ${name}`}
-                >
-                  Remove
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      </div>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor={`app-${day.date}`}>App</Label>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  $
+                </span>
+                <Input
+                  id={`app-${day.date}`}
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={tips.app === 0 || tips.app === '0' ? '' : String(tips.app)}
+                  onChange={(e) => handleTipChange('app', e.target.value)}
+                  className="h-12 pl-7 font-mono text-base"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor={`credit-${day.date}`}>Credit</Label>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  $
+                </span>
+                <Input
+                  id={`credit-${day.date}`}
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={tips.creditCard === 0 || tips.creditCard === '0' ? '' : String(tips.creditCard)}
+                  onChange={(e) => handleTipChange('creditCard', e.target.value)}
+                  className="h-12 pl-7 font-mono text-base"
+                />
+              </div>
+            </div>
+          </div>
 
-      {totalHours === 0 && totalTipsDisplay > 0 && (
-        <p className="day-unassigned-warning" role="alert">
-          ${totalTipsDisplay.toFixed(2)} in tips is entered but no employee has hours yet
-          for this day, so it won&apos;t be included in any totals. Add hours above to
-          distribute it.
-        </p>
-      )}
-
-      {totalHours > 0 && totalTipsDisplay > 0 && (
-        <div className="day-results">
-          <p className="day-calc-summary">
-            ${totalTipsDisplay.toFixed(2)} ÷ {totalHours} hrs = $
-            {ratePerHour.toFixed(2)}/hr
-          </p>
-          <TipDistributionChart
-            shares={shares}
-            rosterMap={rosterMap}
-          />
-          <table className="day-shares-table">
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>Hours</th>
-                <th>Share</th>
-              </tr>
-            </thead>
-            <tbody>
-              {workers.map((employeeId) => (
-                <tr key={employeeId}>
-                  <td>{rosterMap[employeeId]?.name ?? employeeId}</td>
-                  <td>{parseFloat(hours[employeeId]) || hours[employeeId]}</td>
-                  <td>${(shares[employeeId] ?? 0).toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <p
-            className={`day-reconciled ${reconciled ? 'ok' : 'warning'}`}
-            role="status"
-          >
-            {reconciled
-              ? `Distributed: $${Object.values(shares).reduce((a, b) => a + b, 0).toFixed(2)} (matches total tips)`
-              : 'Rounding adjustment needed'}
-          </p>
+          <div className="mt-4 flex items-center justify-end gap-2 border-t border-border pt-3">
+            <span className="text-sm font-medium text-muted-foreground">Total</span>
+            <span className="font-mono text-2xl font-extrabold text-foreground">
+              ${totalTipsDisplay.toFixed(2)}
+            </span>
+          </div>
         </div>
-      )}
-    </article>
+
+        <div className="mb-2">
+          <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Employees who worked
+          </h4>
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row">
+            <select
+              value={selectedEmployeeId}
+              onChange={(e) => setSelectedEmployeeId(e.target.value)}
+              aria-label="Select employee"
+              className="h-11 flex-1 cursor-pointer rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:border-primary"
+            >
+              <option value="">Select employee…</option>
+              {availableToAdd.map((emp) => (
+                <option key={emp.id} value={emp.id}>
+                  {emp.name}
+                </option>
+              ))}
+            </select>
+            <Button type="button" onClick={addEmployee} disabled={!selectedEmployeeId}>
+              Add
+            </Button>
+          </div>
+          {roster.length === 0 && (
+            <p className="mb-2 text-sm text-muted-foreground">Add employees to the roster first.</p>
+          )}
+          {employeesOnDay.length === 0 && roster.length > 0 && (
+            <p className="mb-2 text-sm text-muted-foreground">Select an employee above and click Add.</p>
+          )}
+          <ul className="m-0 flex list-none flex-col p-0">
+            {employeesOnDay.map((employeeId) => {
+              const name = rosterMap[employeeId]?.name ?? 'Unknown'
+              return (
+                <li
+                  key={employeeId}
+                  className="flex flex-col gap-2 border-b border-border py-2 last:border-b-0 sm:flex-row sm:items-center sm:gap-3"
+                >
+                  <span className="text-sm font-medium text-foreground sm:w-32 sm:flex-none">{name}</span>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      inputMode="decimal"
+                      value={
+                        hours[employeeId] == null || hours[employeeId] === '' || hours[employeeId] === 0
+                          ? ''
+                          : String(hours[employeeId])
+                      }
+                      onChange={(e) => handleHoursChange(employeeId, e.target.value)}
+                      placeholder="0.00"
+                      aria-label={`Hours for ${name}`}
+                      className="w-24 font-mono"
+                    />
+                    <span className="text-sm text-muted-foreground">hrs</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeEmployee(employeeId)}
+                    aria-label={`Remove ${name}`}
+                    className="text-brand-pink hover:bg-brand-pink/10 hover:text-brand-pink-dark sm:ml-auto"
+                  >
+                    Remove
+                  </Button>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+
+        {totalHours === 0 && totalTipsDisplay > 0 && (
+          <p
+            role="alert"
+            className="mt-3 rounded-md border border-amber-300/50 bg-amber-500/10 px-3 py-2 text-sm font-medium text-amber-600 dark:text-amber-400"
+          >
+            ${totalTipsDisplay.toFixed(2)} in tips is entered but no employee has hours yet
+            for this day, so it won&apos;t be included in any totals. Add hours above to
+            distribute it.
+          </p>
+        )}
+
+        {totalHours > 0 && totalTipsDisplay > 0 && (
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="mb-3 font-mono text-sm text-muted-foreground">
+              ${totalTipsDisplay.toFixed(2)} ÷ {totalHours.toFixed(2)} hrs = $
+              {ratePerHour.toFixed(2)}/hr
+            </p>
+            <TipDistributionChart
+              shares={shares}
+              rosterMap={rosterMap}
+            />
+            <div className="mt-3 max-w-full overflow-x-auto rounded-md border border-border">
+              <table className="w-full min-w-[320px] border-collapse text-sm">
+                <thead>
+                  <tr className="bg-brand-charcoal text-white">
+                    <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide">
+                      Employee
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide">
+                      Hours
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide">
+                      Share
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {workers.map((employeeId, i) => (
+                    <tr key={employeeId} className={i % 2 === 1 ? 'bg-primary/5' : ''}>
+                      <td className="border-b border-border px-3 py-2">
+                        {rosterMap[employeeId]?.name ?? employeeId}
+                      </td>
+                      <td className="border-b border-border px-3 py-2">
+                        {parseFloat(hours[employeeId]) || hours[employeeId]}
+                      </td>
+                      <td className="border-b border-border px-3 py-2 font-mono font-medium">
+                        ${(shares[employeeId] ?? 0).toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p
+              role="status"
+              className={cn(
+                'mt-2 text-sm font-medium',
+                reconciled ? 'text-muted-foreground' : 'text-amber-600 dark:text-amber-400'
+              )}
+            >
+              {reconciled
+                ? `Distributed: $${Object.values(shares).reduce((a, b) => a + b, 0).toFixed(2)} (matches total tips)`
+                : 'Rounding adjustment needed'}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
