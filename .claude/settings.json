@@ -23,7 +23,8 @@
       "Bash(node \"C:\\\\Users\\\\Nicholas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Nicholas-Projects-tru-bowl-tip-calculator\\\\7e5501af-184c-4f71-9510-405048997b35\\\\scratchpad\\\\verify-delete-period.js\")",
       "Bash(npm ls *)",
       "Read(//c//**)",
-      "Bash(NODE_PATH=\"/c/Users/Nicholas/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules\" node \"C:\\\\Users\\\\Nicholas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Nicholas-Projects-tru-bowl-tip-calculator\\\\7e5501af-184c-4f71-9510-405048997b35\\\\scratchpad\\\\verify-delete-period.js\")"
+      "Bash(NODE_PATH=\"/c/Users/Nicholas/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules\" node \"C:\\\\Users\\\\Nicholas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Nicholas-Projects-tru-bowl-tip-calculator\\\\7e5501af-184c-4f71-9510-405048997b35\\\\scratchpad\\\\verify-delete-period.js\")",
+      "Bash(NODE_PATH=\"/c/Users/Nicholas/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules\" node \"C:\\\\Users\\\\Nicholas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Nicholas-Projects-tru-bowl-tip-calculator\\\\7e5501af-184c-4f71-9510-405048997b35\\\\scratchpad\\\\verify-mobile-layout.js\")"
     ]
   }
 }

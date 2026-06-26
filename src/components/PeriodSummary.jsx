@@ -16,11 +16,23 @@ export function PeriodSummary({ period, roster }) {
     getDisplayName(a).localeCompare(getDisplayName(b))
   )
 
-  const hasAnyData = sortedIds.some(
-    (id) =>
-      (byEmployee[id] ?? 0) > 0 ||
-      period.days.some((d) => (byDay[d.date]?.[id] ?? 0) > 0)
-  )
+  // Shared per-employee data for both the desktop table and the mobile
+  // cards, so the "does this employee have any data" filtering only
+  // happens once.
+  const rows = sortedIds
+    .map((employeeId) => {
+      const name = getDisplayName(employeeId)
+      const total = byEmployee[employeeId] ?? 0
+      const days = period.days.map((d) => ({
+        date: d.date,
+        share: byDay[d.date]?.[employeeId] ?? 0,
+      }))
+      const hasData = total > 0 || days.some((d) => d.share > 0)
+      return hasData ? { employeeId, name, total, days } : null
+    })
+    .filter(Boolean)
+
+  const hasAnyData = rows.length > 0
 
   return (
     <section className="period-summary">
@@ -48,31 +60,49 @@ export function PeriodSummary({ period, roster }) {
             </tr>
           </thead>
           <tbody>
-            {sortedIds.map((employeeId) => {
-              const name = getDisplayName(employeeId)
-              const total = byEmployee[employeeId] ?? 0
-              const hasData = total > 0 || period.days.some((d) => (byDay[d.date]?.[employeeId] ?? 0) > 0)
-              if (!hasData) return null
-              return (
-                <tr key={employeeId}>
-                  <td>{name}</td>
-                  {period.days.map((d) => {
-                    const share = byDay[d.date]?.[employeeId] ?? 0
-                    return (
-                      <td key={d.date}>
-                        {share > 0 ? `$${share.toFixed(2)}` : '–'}
-                      </td>
-                    )
-                  })}
-                  <td className="col-total">
-                    <strong>${total.toFixed(2)}</strong>
-                  </td>
-                </tr>
-              )
-            })}
+            {rows.map(({ employeeId, name, total, days }) => (
+              <tr key={employeeId}>
+                <td>{name}</td>
+                {days.map(({ date, share }) => (
+                  <td key={date}>{share > 0 ? `$${share.toFixed(2)}` : '–'}</td>
+                ))}
+                <td className="col-total">
+                  <strong>${total.toFixed(2)}</strong>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
+
+      <ul className="summary-cards">
+        {rows.map(({ employeeId, name, total, days }) => {
+          const activeDays = days.filter((d) => d.share > 0)
+          return (
+            <li key={employeeId} className="summary-card">
+              <div className="summary-card-header">
+                <span className="summary-card-name">{name}</span>
+                <span className="summary-card-total">${total.toFixed(2)}</span>
+              </div>
+              {activeDays.length > 0 && (
+                <details className="summary-card-details">
+                  <summary>
+                    Daily breakdown ({activeDays.length} {activeDays.length === 1 ? 'day' : 'days'})
+                  </summary>
+                  <ul className="summary-card-days">
+                    {activeDays.map(({ date, share }) => (
+                      <li key={date}>
+                        <span>{formatDate(date)}</span>
+                        <span>${share.toFixed(2)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </li>
+          )
+        })}
+      </ul>
       </>
       )}
     </section>

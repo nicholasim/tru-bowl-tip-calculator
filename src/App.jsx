@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { useTipCalcStorage } from './hooks/useLocalStorage'
 import { useAuth } from './hooks/useAuth'
@@ -58,6 +58,22 @@ function App() {
   }
 
   const activePeriod = periods.find((p) => p.id === activePeriodId)
+
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const userMenuRef = useRef(null)
+
+  // Closes the mobile header menu when the user taps anywhere outside it,
+  // since the menu has no other dismiss affordance on touch devices.
+  useEffect(() => {
+    if (!userMenuOpen) return
+    const handleClickOutside = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [userMenuOpen])
 
   const handleContinueAsGuest = () => {
     // Every guest session starts fresh, with no leftover data from a
@@ -167,34 +183,88 @@ function App() {
         />
         <div className="app-header-titles">
           <h1>Tip Calculator</h1>
-          <span className="app-header-user">
-            {displayName ? formatDisplayName(displayName) : ''}
+          <span className="app-header-user" ref={userMenuRef}>
+            <span className="app-header-username">
+              {displayName ? formatDisplayName(displayName) : ''}
+            </span>
+
+            <span className="app-header-actions">
+              <button
+                type="button"
+                onClick={handleResetUser}
+                className="btn-reset-user"
+                aria-label="Reset user data"
+              >
+                Reset
+              </button>
+              {isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="btn-switch-user"
+                  aria-label="Sign out"
+                >
+                  Sign out
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSwitchUser}
+                  className="btn-switch-user"
+                  aria-label="Switch user"
+                >
+                  Switch user
+                </button>
+              )}
+            </span>
+
             <button
               type="button"
-              onClick={handleResetUser}
-              className="btn-reset-user"
-              aria-label="Reset user data"
+              className="app-header-menu-toggle"
+              aria-label="More options"
+              aria-haspopup="true"
+              aria-expanded={userMenuOpen}
+              onClick={() => setUserMenuOpen((v) => !v)}
             >
-              Reset
+              ⋮
             </button>
-            {isAuthenticated ? (
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="btn-switch-user"
-                aria-label="Sign out"
-              >
-                Sign out
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleSwitchUser}
-                className="btn-switch-user"
-                aria-label="Switch user"
-              >
-                Switch user
-              </button>
+
+            {userMenuOpen && (
+              <div className="app-header-menu" role="menu">
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setUserMenuOpen(false)
+                    handleResetUser()
+                  }}
+                >
+                  Reset
+                </button>
+                {isAuthenticated ? (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setUserMenuOpen(false)
+                      handleSignOut()
+                    }}
+                  >
+                    Sign out
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setUserMenuOpen(false)
+                      handleSwitchUser()
+                    }}
+                  >
+                    Switch user
+                  </button>
+                )}
+              </div>
             )}
           </span>
         </div>
