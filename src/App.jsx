@@ -143,6 +143,11 @@ function App() {
   }
 
   const handleRemovePeriod = (periodId) => {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this pay period? This will permanently remove all tip entries for this period.'
+    )
+    if (!confirmed) return
+
     setPeriods((prev) => prev.filter((p) => p.id !== periodId))
     if (activePeriodId === periodId) {
       const remaining = periods.filter((p) => p.id !== periodId)
@@ -203,8 +208,18 @@ function App() {
             <h2>Pay Period</h2>
             {activePeriod ? (
               <p className="period-current">
-                <span className="period-current-label">Current:</span>{' '}
-                {formatPeriodRange(activePeriod.startDate, activePeriod.endDate)}
+                <span>
+                  <span className="period-current-label">Current:</span>{' '}
+                  {formatPeriodRange(activePeriod.startDate, activePeriod.endDate)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleRemovePeriod(activePeriod.id)}
+                  className="period-current-remove"
+                  aria-label={`Delete ${formatPeriodRange(activePeriod.startDate, activePeriod.endDate)}`}
+                >
+                  Delete
+                </button>
               </p>
             ) : (
               <p className="period-none">No pay period selected.</p>
@@ -255,9 +270,9 @@ function App() {
                         type="button"
                         onClick={() => handleRemovePeriod(p.id)}
                         className="period-past-remove"
-                        aria-label={`Remove ${formatPeriodRange(p.startDate, p.endDate)}`}
+                        aria-label={`Delete ${formatPeriodRange(p.startDate, p.endDate)}`}
                       >
-                        Remove
+                        Delete
                       </button>
                     </li>
                   ))}

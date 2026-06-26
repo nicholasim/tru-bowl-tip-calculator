@@ -427,8 +427,17 @@
 }
 
 /* Period selector */
-.period-current,
 .period-none {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.period-current {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   margin: 0 0 0.75rem;
   font-size: 0.95rem;
   color: var(--text);
@@ -490,6 +499,7 @@
   color: var(--black);
 }
 
+.period-current-remove,
 .period-past-remove {
   padding: 0.3rem 0.5rem;
   font-size: 0.8rem;
@@ -497,8 +507,10 @@
   background: transparent;
   border: none;
   border-radius: var(--radius-sm);
+  flex-shrink: 0;
 }
 
+.period-current-remove:hover,
 .period-past-remove:hover {
   color: var(--pink-dark);
   background: rgba(215, 107, 169, 0.08);
@@ -1136,6 +1148,7 @@ textarea:focus {
   .roster-actions button,
   .period-past-open,
   .period-past-remove,
+  .period-current-remove,
   .btn-add-employee,
   .btn-new-period {
     min-height: 44px;

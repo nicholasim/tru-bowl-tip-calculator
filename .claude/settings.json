@@ -10,7 +10,20 @@
       "PowerShell(Stop-Process -Id 21428 -Force -ErrorAction SilentlyContinue)",
       "Bash(node verify-rebrand.js)",
       "Bash(node verify-rebrand2.js)",
-      "PowerShell(Stop-Process -Id 30584 -Force -ErrorAction SilentlyContinue)"
+      "PowerShell(Stop-Process -Id 30584 -Force -ErrorAction SilentlyContinue)",
+      "Bash(git stash *)",
+      "Bash(powershell -NoProfile -Command \"Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force\")",
+      "Bash(find .claude/skills -maxdepth 2 -iname \"SKILL.md\")",
+      "Bash(ls .claude/skills)",
+      "Bash(ls -la .claude)",
+      "Bash(chromium-cli --help)",
+      "Bash(npx --no-install playwright install --dry-run chromium)",
+      "Bash(ls -la \"/c/Users/Nicholas/AppData/Local/ms-playwright\" 2>&1)",
+      "Read(//c/Users/Nicholas/AppData/Local/ms-playwright/**)",
+      "Bash(node \"C:\\\\Users\\\\Nicholas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Nicholas-Projects-tru-bowl-tip-calculator\\\\7e5501af-184c-4f71-9510-405048997b35\\\\scratchpad\\\\verify-delete-period.js\")",
+      "Bash(npm ls *)",
+      "Read(//c//**)",
+      "Bash(NODE_PATH=\"/c/Users/Nicholas/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules\" node \"C:\\\\Users\\\\Nicholas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Nicholas-Projects-tru-bowl-tip-calculator\\\\7e5501af-184c-4f71-9510-405048997b35\\\\scratchpad\\\\verify-delete-period.js\")"
     ]
   }
 }
