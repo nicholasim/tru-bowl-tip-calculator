@@ -18,14 +18,57 @@ describe('distributeTipsByHours', () => {
     expect(reconciled).toBe(true)
   })
 
-  it('uses largest-remainder when distribution does not divide evenly', () => {
+  it('gives employees with equal hours an identical share, even when it does not divide evenly', () => {
+    // 7 hrs each out of 21 total: exact share is 33.333...repeating dollars per
+    // person. The old largest-remainder method floored each to $33.33, then handed
+    // the one leftover penny to a single person (by remainder/index tiebreak),
+    // producing $33.34/$33.33/$33.33 -- unequal pay for equal hours. Grouping by
+    // hours and rounding once per group fixes that: all three get $33.33, and the
+    // $0.01 that's left over is simply not distributed.
+    const tips = { cash: 100, app: 0, creditCard: 0 }
+    const hours = { a: 7, b: 7, c: 7 }
+    const { shares, totalTips, reconciled } = distributeTipsByHours(tips, hours)
+
+    expect(shares.a).toBe(33.33)
+    expect(shares.b).toBe(33.33)
+    expect(shares.c).toBe(33.33)
+    expect(totalTips).toBe(100)
+    expect(reconciled).toBe(false)
+  })
+
+  it('rounds an exact half-cent up (half-up), not down or to even', () => {
+    // $39.53 split evenly two ways is exactly $19.765 each -- a tie that must
+    // round up to $19.77 under half-up rounding (computed via exact integer
+    // arithmetic so floating-point can't nudge the tie either way).
+    const { shares: tieShares } = distributeTipsByHours(
+      { cash: 39.53, app: 0, creditCard: 0 },
+      { a: 1, b: 1 }
+    )
+    expect(tieShares.a).toBe(19.77)
+    expect(tieShares.b).toBe(19.77)
+
+    // $1.01 split evenly two ways is exactly $0.505 each. Half-up rounds this
+    // up to $0.51; round-half-to-even would instead round down to $0.50.
+    const { shares: centShares } = distributeTipsByHours(
+      { cash: 1.01, app: 0, creditCard: 0 },
+      { a: 1, b: 1 }
+    )
+    expect(centShares.a).toBe(0.51)
+    expect(centShares.b).toBe(0.51)
+  })
+
+  it('reports a mismatch instead of forcing the distributed total to match exactly', () => {
     const tips = { cash: 10, app: 0, creditCard: 0 }
     const hours = { a: 1, b: 1, c: 1 }
-    const { shares, reconciled } = distributeTipsByHours(tips, hours)
+    const { shares, totalTips, reconciled } = distributeTipsByHours(tips, hours)
 
-    expect(Object.values(shares).reduce((a, b) => a + b, 0)).toBe(10)
-    expect(reconciled).toBe(true)
-    expect(shares.a + shares.b + shares.c).toBe(10)
+    expect(shares.a).toBe(3.33)
+    expect(shares.b).toBe(3.33)
+    expect(shares.c).toBe(3.33)
+    const distributedTotal = Object.values(shares).reduce((a, b) => a + b, 0)
+    expect(distributedTotal).toBe(9.99)
+    expect(totalTips).toBe(10)
+    expect(reconciled).toBe(false)
   })
 
   it('excludes employees with 0 hours', () => {

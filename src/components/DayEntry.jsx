@@ -54,7 +54,7 @@ export function DayEntry({ day, roster, onUpdate }) {
   )
   const hours = useMemo(() => day.hours ?? {}, [day.hours])
 
-  const { shares, totalHours, ratePerHour, reconciled } = useMemo(
+  const { shares, totalTips, totalHours, ratePerHour, reconciled } = useMemo(
     () => distributeTipsByHours(tips, hours),
     [tips, hours]
   )
@@ -102,6 +102,12 @@ export function DayEntry({ day, roster, onUpdate }) {
     (parseFloat(tips.creditCard) || 0)
   const employeesOnDay = Object.keys(hours)
   const workers = employeesOnDay.filter((id) => (parseFloat(hours[id]) || 0) > 0)
+  const distributedTotal = Object.values(shares).reduce((a, b) => a + b, 0)
+  const distributionMessage = reconciled
+    ? `Distributed: $${distributedTotal.toFixed(2)} (matches total tips)`
+    : `Distributed: $${distributedTotal.toFixed(2)} — differs from $${totalTips.toFixed(2)} total by ${
+        distributedTotal > totalTips ? '+' : '-'
+      }$${Math.abs(distributedTotal - totalTips).toFixed(2)} (rounding)`
   const availableToAdd = roster.filter((e) => hours[e.id] === undefined)
 
   return (
@@ -301,9 +307,7 @@ export function DayEntry({ day, roster, onUpdate }) {
                 reconciled ? 'text-muted-foreground' : 'text-amber-600 dark:text-amber-400'
               )}
             >
-              {reconciled
-                ? `Distributed: $${Object.values(shares).reduce((a, b) => a + b, 0).toFixed(2)} (matches total tips)`
-                : 'Rounding adjustment needed'}
+              {distributionMessage}
             </p>
           </div>
         )}

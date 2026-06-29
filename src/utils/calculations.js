@@ -1,6 +1,9 @@
 /**
  * Tip distribution calculations.
- * Uses largest-remainder method so sum of distributed amounts equals total tips.
+ * Employees are grouped by hours worked; everyone in a group receives the
+ * exact same rounded share. Each group's share is computed independently, so
+ * the distributed total can land a cent or two off total tips -- equal pay
+ * for equal hours takes priority over the distributed total matching exactly.
  *
  * All money is rounded through the helpers below so cents are derived the
  * same way everywhere: a tiny epsilon guards against cases where chained
@@ -20,14 +23,22 @@ function toCentsInt(amount) {
   return Math.round((amount + FP_EPSILON) * 100)
 }
 
-/** Dollars -> integer cents, rounded down (used for largest-remainder base shares). */
-function floorToCentsInt(amount) {
-  return Math.floor(amount * 100 + FP_EPSILON)
+/**
+ * Round the fraction numerator/denominator to the nearest integer, half-up
+ * (ties round away from zero). Both inputs must be non-negative integers
+ * within the safe integer range, so the remainder check is exact -- no
+ * floating-point division is used to make the rounding decision.
+ */
+function divideHalfUp(numerator, denominator) {
+  const remainder = numerator % denominator
+  const quotient = (numerator - remainder) / denominator
+  return remainder * 2 >= denominator ? quotient + 1 : quotient
 }
 
 /**
- * Distribute tips by hours using largest-remainder method.
- * Only includes employees with hours > 0.
+ * Distribute tips by hours. Only includes employees with hours > 0.
+ * Employees with identical hours are grouped and always receive an identical
+ * share, rounded half-up to the nearest cent.
  *
  * @param {Object} tips - { cash, app, creditCard } in dollars
  * @param {Object} hours - { employeeId: number } hours worked per employee
@@ -54,42 +65,32 @@ export function distributeTipsByHours(tips, hours) {
   }
 
   const ratePerHour = totalTips / totalHours
-  const exactAmounts = []
-  let index = 0
+  const totalTipsCents = toCentsInt(totalTips)
+
+  // Group by hours (hundredths of an hour -- inputs are capped at 2 decimal
+  // places) so equal hours always land in the same group and get one shared
+  // rounding decision instead of being rounded independently per person.
+  const groups = new Map()
+  let totalHoursHundredths = 0
   for (const [employeeId, h] of entries) {
     const hrs = parseFloat(h) || 0
-    const exact = (hrs / totalHours) * totalTips
-    const flooredCents = floorToCentsInt(exact)
-    exactAmounts.push({
-      employeeId,
-      hours: hrs,
-      flooredCents,
-      remainder: exact - flooredCents / 100,
-      index: index++,
-    })
+    const hrsHundredths = Math.round(hrs * 100)
+    totalHoursHundredths += hrsHundredths
+    if (!groups.has(hrsHundredths)) groups.set(hrsHundredths, [])
+    groups.get(hrsHundredths).push(employeeId)
   }
 
-  // Sort by remainder descending; use index as tiebreaker so extra pennies aren't always given to the same person
-  const sortedByRemainder = [...exactAmounts].sort(
-    (a, b) => b.remainder - a.remainder || a.index - b.index
-  )
-  const totalCents = toCentsInt(totalTips)
-  const flooredCentsList = exactAmounts.map((a) => a.flooredCents)
-  const assignedCents = flooredCentsList.reduce((s, c) => s + c, 0)
-  const toAssign = Math.max(0, totalCents - assignedCents)
-
-  for (let i = 0; i < toAssign; i++) {
-    flooredCentsList[sortedByRemainder[i].index] += 1
-  }
-
-  // Round to exact cents so displayed amounts and daily totals don't drift from floating point
   const shares = {}
-  exactAmounts.forEach(({ employeeId }, i) => {
-    shares[employeeId] = flooredCentsList[i] / 100
-  })
+  let distributedTotalCents = 0
+  for (const [hrsHundredths, employeeIds] of groups) {
+    const shareCents = divideHalfUp(totalTipsCents * hrsHundredths, totalHoursHundredths)
+    distributedTotalCents += shareCents * employeeIds.length
+    for (const employeeId of employeeIds) {
+      shares[employeeId] = shareCents / 100
+    }
+  }
 
-  const distributedTotal = Object.values(shares).reduce((a, b) => a + b, 0)
-  const reconciled = Math.abs(distributedTotal - totalTips) < 0.001
+  const reconciled = distributedTotalCents === totalTipsCents
 
   return {
     shares,
