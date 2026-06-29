@@ -22,10 +22,12 @@ The app now runs in production for the store. Because the store owner operates m
 | Layer | Technology |
 |---|---|
 | Framework | Next.js 15 (App Router) + React 19 |
-| Styling | Tailwind CSS + [shadcn/ui](https://ui.shadcn.com) components |
+| Styling | Tailwind CSS + [shadcn/ui](https://ui.shadcn.com) (Radix UI primitives) |
+| Icons | [lucide-react](https://lucide.dev) |
 | Backend | Supabase — PostgreSQL database, Auth, Row-Level Security |
 | Hosting | Vercel (auto-deploys on push to `main`) |
 | IDs | [`nanoid`](https://github.com/ai/nanoid) for client-generated record IDs |
+| Testing | [Vitest](https://vitest.dev) |
 
 ## Features
 
@@ -34,8 +36,9 @@ The app now runs in production for the store. Because the store owner operates m
   - **Authenticated** — create an account and your roster and pay periods sync to Supabase, available from any device.
 - **Username/password accounts** — sign up and log in with just a username; the email Supabase requires under the hood is generated automatically and never shown to the user.
 - **Guest → account migration** — if a guest decides to create an account, their in-progress roster and pay periods are carried over automatically instead of being lost.
+- **Cloud save status** — a header indicator shows **Saving…** while a change is being written to Supabase, **Saved** briefly after it lands, and a persistent **Save failed** badge plus dismissable banner if a write errors out, so a sync problem is never silent.
 - **Employee roster** — add, edit, and remove employees; the list is always displayed alphabetically regardless of entry order.
-- **Pay periods** — create periods with any custom date range, switch between past periods, and delete a period (with a confirmation prompt) along with all of its tip entries. Deleting the active period automatically falls back to the most recent remaining one, or shows an empty state if none are left.
+- **Pay periods** — create periods with a custom date range (capped at 31 days, so a mistyped end date can't silently balloon into a months-long period), switch between past periods, and delete a period (with a confirmation prompt) along with all of its tip entries. Deleting the active period automatically falls back to the most recent remaining one, or shows an empty state if none are left.
 - **Daily tip entry** — log Cash, App, and Credit tips per day and record which employees worked and for how many hours.
 - **Fair tip distribution** — tips are split across employees by hours worked using a largest-remainder algorithm, so distributed shares always reconcile to the exact total (no lost or duplicated pennies).
 - **Pay period summary** — a bar chart and an employee × day breakdown; employees who've since left the roster still show correctly as "Former employee" against their historical entries.
@@ -86,8 +89,9 @@ Open [http://localhost:3000](http://localhost:3000) and either continue as a gue
 | `npm run dev` | Start the dev server |
 | `npm run build` | Production build |
 | `npm run start` | Serve the production build locally |
-| `npm run test` | Run the test suite (Vitest) |
 | `npm run lint` | Run ESLint |
+| `npm run test` | Run the test suite once (Vitest) |
+| `npm run test:watch` | Run the test suite in watch mode |
 
 ### Deploying
 
@@ -113,10 +117,10 @@ src/
 ├── hooks/
 │   ├── useLocalStorage.js    # Guest-mode persistence, user-scoped keys
 │   ├── useAuth.js            # Supabase session + profile state
-│   ├── useSupabaseStorage.js # Authenticated-mode persistence (Supabase)
+│   ├── useSupabaseStorage.js # Authenticated-mode persistence (Supabase), save status, flush/cancel
 │   └── useTheme.js           # Dark/light theme state, persisted to localStorage
 ├── lib/
-│   ├── constants.js          # Storage keys, userKey()
+│   ├── constants.js          # Storage keys, userKey(), period-length cap
 │   ├── periodHelpers.js      # Date ranges, createPayPeriod()
 │   ├── supabaseClient.js     # Supabase client instance
 │   ├── auth.js               # signUpWithUsername / signInWithUsername / signOut
@@ -133,6 +137,8 @@ supabase/
 
 - **Guest mode** is intentionally single-use: every time someone taps "Continue as Guest," any guest data left over from a previous session on that device is wiped first, so each session starts from a clean slate.
 - **Accounts** are Supabase Auth users under the hood, signed in with a hidden, derived email (`uid_<username>@trubowl.internal`) so the user only ever sees a username. A `profiles` table maps username → `auth.uid()`. Roster, pay period, tip, and hours data all live in Supabase tables, each scoped to its owner by Row-Level Security policies — one manager's data is never visible to another's queries, even if the app layer got it wrong.
+- **Cloud writes are tracked end-to-end**: every insert/update/delete is awaited and checked, with debounced writes for per-keystroke tip/hour edits and immediate writes for roster/period changes. The header's save-status indicator reflects that state, and resetting data, signing out, or deleting a period all wait for any in-flight writes to finish so nothing is left half-saved.
+- **Pay periods are capped at 31 days** — `createPayPeriod` rejects a range longer than that, and the "new pay period" form validates and disables submission before it ever gets there, so a stale or mistyped end date can't generate hundreds of day rows.
 - **Tip distribution** divides each day's total tips across the employees who worked, proportional to hours, using the largest-remainder method: whole cents are assigned first, then any leftover pennies go to the employees with the largest fractional remainder, so the distributed total always equals the entered total exactly.
 - **Summaries** are computed from every day in the period and rendered as a bar chart plus an employee × day breakdown; on phone-width screens that breakdown becomes one card per employee with a tap-to-expand daily detail list.
 
