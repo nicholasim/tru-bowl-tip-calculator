@@ -1,5 +1,44 @@
 import { nanoid } from 'nanoid'
-import { DEFAULT_TIPS, BIWEEKLY_DAYS } from './constants'
+import { DEFAULT_TIPS, BIWEEKLY_DAYS, MAX_PERIOD_DAYS } from './constants'
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+/**
+ * Build a YYYY-MM-DD string from a Date's *local* parts. Deliberately not
+ * `date.toISOString().slice(0, 10)` -- that converts to UTC first, which
+ * shifts the date back a day for anyone east of UTC once local midnight has
+ * already crossed into the next UTC day.
+ */
+export function toIsoDateString(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+/**
+ * @param {string} isoDate - ISO date string (YYYY-MM-DD)
+ * @param {number} days - Number of days to add (may be negative)
+ * @returns {string} ISO date string
+ */
+export function addDays(isoDate, days) {
+  const d = new Date(isoDate + 'T00:00:00')
+  d.setDate(d.getDate() + days)
+  return toIsoDateString(d)
+}
+
+/**
+ * Inclusive day count between two ISO date strings, regardless of which one
+ * is earlier.
+ * @param {string} startDate - ISO date string (YYYY-MM-DD)
+ * @param {string} endDate - ISO date string (YYYY-MM-DD)
+ * @returns {number}
+ */
+export function periodLengthDays(startDate, endDate) {
+  const start = new Date(startDate + 'T00:00:00')
+  const end = new Date(endDate + 'T00:00:00')
+  return Math.round(Math.abs(end - start) / MS_PER_DAY) + 1
+}
 
 /**
  * Default end date for a new pay period: BIWEEKLY_DAYS after startDate (inclusive).
@@ -9,15 +48,14 @@ import { DEFAULT_TIPS, BIWEEKLY_DAYS } from './constants'
  * @returns {string} ISO date string
  */
 export function defaultEndDate(startDate) {
-  const d = new Date(startDate + 'T00:00:00')
-  d.setDate(d.getDate() + BIWEEKLY_DAYS - 1)
-  return d.toISOString().slice(0, 10)
+  return addDays(startDate, BIWEEKLY_DAYS - 1)
 }
 
 /**
  * @param {string} startDate - ISO date string (YYYY-MM-DD)
  * @param {string} [endDate] - Optional end date (YYYY-MM-DD). If omitted, 14 days from start.
  * @returns {Object} New pay period with days from start through end (inclusive)
+ * @throws {Error} If the requested range exceeds MAX_PERIOD_DAYS
  */
 export function createPayPeriod(startDate, endDate) {
   let start = new Date(startDate + 'T00:00:00')
@@ -25,13 +63,18 @@ export function createPayPeriod(startDate, endDate) {
   if (!endDate) end.setDate(end.getDate() + BIWEEKLY_DAYS - 1)
   if (end < start) [start, end] = [end, start]
 
+  const spanDays = Math.round((end - start) / MS_PER_DAY) + 1
+  if (spanDays > MAX_PERIOD_DAYS) {
+    throw new Error(`Pay period can't exceed ${MAX_PERIOD_DAYS} days (requested ${spanDays}).`)
+  }
+
   const id = nanoid()
   const days = []
   let current = new Date(start.getTime())
 
   while (current <= end) {
     days.push({
-      date: current.toISOString().slice(0, 10),
+      date: toIsoDateString(current),
       tips: { ...DEFAULT_TIPS },
       hours: {},
     })

@@ -16,3 +16,6 @@ export function userKey(baseKey, username) {
 /** Default empty structures */
 export const DEFAULT_TIPS = { cash: 0, app: 0, creditCard: 0 }
 export const BIWEEKLY_DAYS = 14
+
+/** Hard cap on how many days a single pay period can span. */
+export const MAX_PERIOD_DAYS = 31

@@ -8,7 +8,15 @@ import { useSupabaseTipCalcStorage } from '@/hooks/useSupabaseStorage'
 import { useTheme } from '@/hooks/useTheme'
 import { signOut } from '@/lib/auth'
 import { clearLocalGuestData } from '@/lib/migrateLocalData'
-import { createPayPeriod, defaultEndDate, formatPeriodRange } from '@/lib/periodHelpers'
+import {
+  addDays,
+  createPayPeriod,
+  defaultEndDate,
+  formatPeriodRange,
+  periodLengthDays,
+  toIsoDateString,
+} from '@/lib/periodHelpers'
+import { MAX_PERIOD_DAYS } from '@/lib/constants'
 import { RosterManager } from '@/components/RosterManager'
 import { DayEntry } from '@/components/DayEntry'
 import { PeriodSummary } from '@/components/PeriodSummary'
@@ -68,9 +76,7 @@ export function App() {
   const SaveStatusIcon = saveStatusInfo?.icon
 
   const [showNewPeriodForm, setShowNewPeriodForm] = useState(false)
-  const [newPeriodStart, setNewPeriodStart] = useState(
-    () => new Date().toISOString().slice(0, 10)
-  )
+  const [newPeriodStart, setNewPeriodStart] = useState(() => toIsoDateString(new Date()))
   const [newPeriodEnd, setNewPeriodEnd] = useState(() => defaultEndDate(newPeriodStart))
 
   // Keep the end date in sync with the start date so a stale end date (from
@@ -80,6 +86,10 @@ export function App() {
     setNewPeriodStart(value)
     setNewPeriodEnd((prevEnd) => (prevEnd && prevEnd >= value ? prevEnd : defaultEndDate(value)))
   }
+
+  const newPeriodSpanDays = periodLengthDays(newPeriodStart, newPeriodEnd)
+  const newPeriodTooLong = newPeriodSpanDays > MAX_PERIOD_DAYS
+  const maxNewPeriodEnd = addDays(newPeriodStart, MAX_PERIOD_DAYS - 1)
 
   const activePeriod = periods.find((p) => p.id === activePeriodId)
 
@@ -193,6 +203,7 @@ export function App() {
 
   const handleCreatePeriod = (e) => {
     e.preventDefault()
+    if (newPeriodTooLong) return
     const period = createPayPeriod(newPeriodStart, newPeriodEnd)
     setPeriods((prev) => [period, ...prev])
     setActivePeriodId(period.id)
@@ -440,10 +451,16 @@ export function App() {
                       type="date"
                       value={newPeriodEnd}
                       min={newPeriodStart}
+                      max={maxNewPeriodEnd}
                       onChange={(e) => setNewPeriodEnd(e.target.value)}
                     />
                   </div>
-                  <Button type="submit" className="w-full">
+                  {newPeriodTooLong && (
+                    <p role="alert" className="text-sm font-medium text-brand-pink">
+                      Pay period can't exceed {MAX_PERIOD_DAYS} days (currently {newPeriodSpanDays}).
+                    </p>
+                  )}
+                  <Button type="submit" className="w-full" disabled={newPeriodTooLong}>
                     Create
                   </Button>
                 </form>
