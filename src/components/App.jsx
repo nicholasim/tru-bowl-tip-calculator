@@ -154,7 +154,7 @@ export function App() {
         alt="TRŪ Bowl Superfood Bar"
         className="h-10 w-auto object-contain"
       />
-      <h1 className="m-0 text-xl font-bold tracking-tight text-primary">Tip Calculator</h1>
+      <h1 className="m-0 text-xl font-bold tracking-tight text-primary">Employee Tip Calculator</h1>
     </header>
   )
 
@@ -238,7 +238,7 @@ export function App() {
         />
         <div className="flex flex-1 flex-wrap items-baseline gap-3">
           <h1 className="m-0 text-lg font-bold tracking-tight text-primary sm:text-2xl">
-            Tip Calculator
+            Employee Tip Calculator
           </h1>
 
           <div ref={userMenuRef} className="relative ml-auto flex items-center gap-2 sm:gap-3">

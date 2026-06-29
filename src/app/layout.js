@@ -1,7 +1,7 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'TRŪ Bowl Tip Calculator',
+  title: 'TRŪ Bowl Employee Tip Calculator',
   icons: {
     icon: '/TruBowlLogo.jpg',
   },
