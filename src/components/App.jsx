@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { MoreVertical, Plus, Trash2, X } from 'lucide-react'
+import { AlertTriangle, Check, Loader2, MoreVertical, Plus, Trash2, X } from 'lucide-react'
 import { useTipCalcStorage } from '@/hooks/useLocalStorage'
 import { useAuth } from '@/hooks/useAuth'
 import { useSupabaseTipCalcStorage } from '@/hooks/useSupabaseStorage'
@@ -21,6 +21,12 @@ import { Label } from '@/components/ui/label'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
 const GUEST_NAME = 'Guest'
+
+const SAVE_STATUS_DISPLAY = {
+  saving: { label: 'Saving…', icon: Loader2, spin: true },
+  saved: { label: 'Saved', icon: Check },
+  error: { label: 'Save failed', icon: AlertTriangle },
+}
 
 function formatDisplayName(username) {
   return username
@@ -48,10 +54,18 @@ export function App() {
     setPeriods,
     activePeriodId,
     setActivePeriodId,
+    saveStatus,
+    flush,
+    cancelPendingSyncs,
   } = active
 
   // Always display the roster alphabetically, regardless of insertion order.
   const sortedRoster = [...roster].sort((a, b) => a.name.localeCompare(b.name))
+
+  // 'idle' has no entry in SAVE_STATUS_DISPLAY, so the badge is intentionally
+  // hidden until the first save attempt (and again ~2s after a save settles).
+  const saveStatusInfo = SAVE_STATUS_DISPLAY[saveStatus]
+  const SaveStatusIcon = saveStatusInfo?.icon
 
   const [showNewPeriodForm, setShowNewPeriodForm] = useState(false)
   const [newPeriodStart, setNewPeriodStart] = useState(
@@ -71,6 +85,17 @@ export function App() {
 
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef(null)
+
+  // Re-show the failed-save banner each time a *new* error occurs, even if
+  // the user already dismissed a previous one. Adjusted during render (not
+  // in an effect) since it's just resetting state in response to a prop
+  // change, per https://react.dev/learn/you-might-not-need-an-effect.
+  const [saveBannerDismissed, setSaveBannerDismissed] = useState(false)
+  const [prevSaveStatus, setPrevSaveStatus] = useState(saveStatus)
+  if (saveStatus !== prevSaveStatus) {
+    setPrevSaveStatus(saveStatus)
+    if (saveStatus === 'error') setSaveBannerDismissed(false)
+  }
 
   // Closes the mobile header menu when the user taps anywhere outside it,
   // since the menu has no other dismiss affordance on touch devices.
@@ -97,15 +122,29 @@ export function App() {
   }
 
   const handleSignOut = async () => {
+    // Read saveStatus now (synchronously, before any await) so an error from
+    // a write that already finished isn't missed -- flush()'s return value
+    // only covers writes still in flight at the moment it's called.
+    const hadErrorAlready = cloudStorage.saveStatus === 'error'
+    cloudStorage.cancelPendingSyncs?.()
+    const flushedClean = await cloudStorage.flush?.()
+    if (hadErrorAlready || flushedClean === false) {
+      const proceed = window.confirm(
+        'A save failed. Sign out anyway? Unsaved changes may be lost.'
+      )
+      if (!proceed) return
+    }
     await signOut()
     setGuestMode(false)
   }
 
-  const handleResetUser = () => {
+  const handleResetUser = async () => {
     if (!window.confirm('Clear all data for this user? Roster and pay periods will be reset.')) return
+    cancelPendingSyncs?.()
     setRoster([])
     setPeriods([])
     setActivePeriodId(null)
+    await flush?.()
   }
 
   const minimalHeader = (
@@ -172,17 +211,19 @@ export function App() {
     )
   }
 
-  const handleRemovePeriod = (periodId) => {
+  const handleRemovePeriod = async (periodId) => {
     const confirmed = window.confirm(
       'Are you sure you want to delete this pay period? This will permanently remove all tip entries for this period.'
     )
     if (!confirmed) return
 
+    cancelPendingSyncs?.(periodId)
     setPeriods((prev) => prev.filter((p) => p.id !== periodId))
     if (activePeriodId === periodId) {
       const remaining = periods.filter((p) => p.id !== periodId)
       setActivePeriodId(remaining[0]?.id ?? null)
     }
+    await flush?.()
   }
 
   const pastPeriods = periods.filter((p) => p.id !== activePeriodId)
@@ -201,6 +242,15 @@ export function App() {
           </h1>
 
           <div ref={userMenuRef} className="relative ml-auto flex items-center gap-2 sm:gap-3">
+            {saveStatusInfo && (
+              <Badge
+                variant={saveStatus === 'error' ? 'destructive' : 'secondary'}
+                className={saveStatus === 'error' ? 'gap-1' : 'gap-1 bg-white/10 text-white'}
+              >
+                <SaveStatusIcon className={saveStatusInfo.spin ? 'size-3.5 animate-spin' : 'size-3.5'} />
+                {saveStatusInfo.label}
+              </Badge>
+            )}
             <Badge variant="secondary" className="bg-white/10 text-white">
               {displayName ? formatDisplayName(displayName) : ''}
             </Badge>
@@ -302,6 +352,28 @@ export function App() {
           </div>
         </div>
       </header>
+
+      {saveStatus === 'error' && !saveBannerDismissed && (
+        <div
+          role="alert"
+          className="flex items-center justify-between gap-3 border-b-2 border-destructive bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive sm:px-8"
+        >
+          <span className="flex items-center gap-2">
+            <AlertTriangle className="size-4 shrink-0" />
+            Save failed. Check your connection and try again.
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setSaveBannerDismissed(true)}
+            aria-label="Dismiss save error"
+            className="size-7 shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          >
+            <X className="size-4" />
+          </Button>
+        </div>
+      )}
 
       <div className="mx-auto flex max-w-[1320px] flex-col gap-4 p-4 sm:flex-row sm:gap-6 sm:p-8">
         <aside className="flex flex-col gap-4 sm:w-[300px] sm:flex-none">

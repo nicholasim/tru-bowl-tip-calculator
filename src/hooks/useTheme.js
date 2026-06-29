@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 const THEME_KEY = 'tipcalc_theme'
 
 function getInitialTheme() {
+  if (typeof window === 'undefined') return 'dark'
   const stored = localStorage.getItem(THEME_KEY)
   return stored === 'light' || stored === 'dark' ? stored : 'dark'
 }
