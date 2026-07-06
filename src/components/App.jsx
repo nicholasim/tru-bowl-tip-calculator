@@ -54,6 +54,14 @@ export function App() {
   const guestStorage = useTipCalcStorage(guestMode ? GUEST_NAME : null)
   const cloudStorage = useSupabaseTipCalcStorage(isAuthenticated ? user.id : null)
   const active = isAuthenticated ? cloudStorage : guestStorage
+  const { loadError, retryLoad } = cloudStorage
+  const [retrying, setRetrying] = useState(false)
+
+  const handleRetryLoad = async () => {
+    setRetrying(true)
+    await retryLoad?.()
+    setRetrying(false)
+  }
 
   const {
     roster,
@@ -195,6 +203,32 @@ export function App() {
         <p className="m-6 rounded-xl border-2 border-dashed border-border bg-card p-12 text-center text-muted-foreground">
           Loading your data…
         </p>
+      </div>
+    )
+  }
+
+  // A load failure must never fall through to the normal app below -- that
+  // would render an empty roster/periods and look like the user's data was
+  // deleted, when it's really just an unreachable server.
+  if (isAuthenticated && loadError) {
+    return (
+      <div className="min-h-screen bg-background">
+        {minimalHeader}
+        <div className="m-6 flex flex-col items-center gap-4 rounded-xl border-2 border-dashed border-destructive/50 bg-card p-12 text-center">
+          <p className="text-muted-foreground">
+            We couldn&apos;t load your data. The server may be temporarily unavailable.
+          </p>
+          <Button onClick={handleRetryLoad} disabled={retrying}>
+            {retrying ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Trying again…
+              </>
+            ) : (
+              'Try again'
+            )}
+          </Button>
+        </div>
       </div>
     )
   }

@@ -265,12 +265,18 @@ function syncPeriodsDiff(prev, next, debouncedSync, runTracked) {
  * flush() and cancelPendingSyncs() let callers (e.g. reset / sign-out / period
  * delete) force a clean, fully-awaited stopping point: cancel debounced
  * writes that haven't fired yet, then wait for whatever's already in flight.
+ *
+ * loadError is set when the initial (or retried) load fails, and roster/
+ * periods are deliberately left untouched when that happens -- otherwise an
+ * outage would look identical to the user's data having been deleted.
+ * retryLoad() re-runs the load without a full page reload.
  */
 export function useSupabaseTipCalcStorage(userId) {
   const [roster, setRosterState] = useState([])
   const [periods, setPeriodsState] = useState([])
   const [activePeriodId, setActivePeriodId] = useState(null)
   const [loadedUserId, setLoadedUserId] = useState(null)
+  const [loadError, setLoadError] = useState(null)
   const [saveStatus, setSaveStatus] = useState('idle')
   const loading = userId !== loadedUserId
 
@@ -281,6 +287,7 @@ export function useSupabaseTipCalcStorage(userId) {
   const batchHadError = useRef(false)
   const pendingWrites = useRef(new Set())
   const savedRevertTimer = useRef(null)
+  const loadActiveRef = useRef(false)
 
   // Reset stale save status when switching users, rather than in an effect,
   // so a previous session's status can't briefly show during the render that
@@ -364,34 +371,54 @@ export function useSupabaseTipCalcStorage(userId) {
     [runTracked]
   )
 
-  useEffect(() => {
-    if (!userId) return
-
-    let active = true
-    const timers = debounceTimers.current
-    fetchAll()
+  // Shared by the load effect and retryLoad below, so a manual retry can
+  // reuse the exact same success/failure handling as the initial load.
+  // loadActiveRef (rather than an effect-local variable) tracks whether this
+  // in-flight load is still relevant, since retryLoad fires outside the
+  // effect's own closure.
+  const runLoad = useCallback((uid) => {
+    loadActiveRef.current = true
+    return fetchAll()
       .then(({ roster: fetchedRoster, periods: fetchedPeriods }) => {
-        if (!active) return
+        if (!loadActiveRef.current) return
         rosterRef.current = fetchedRoster
         periodsRef.current = fetchedPeriods
         setRosterState(fetchedRoster)
         setPeriodsState(fetchedPeriods)
         setActivePeriodId(fetchedPeriods[0]?.id ?? null)
+        setLoadError(null)
       })
-      .catch((e) => console.error('Failed to load Supabase data:', e))
+      .catch((e) => {
+        console.error('Failed to load Supabase data:', e)
+        // Deliberately leave roster/periods untouched -- a failed load must
+        // never look like an empty (i.e. deleted) account.
+        if (loadActiveRef.current) setLoadError(e)
+      })
       .finally(() => {
-        if (active) setLoadedUserId(userId)
+        if (loadActiveRef.current) setLoadedUserId(uid)
       })
+  }, [])
+
+  useEffect(() => {
+    if (!userId) return
+
+    const timers = debounceTimers.current
+    runLoad(userId)
 
     return () => {
-      active = false
+      loadActiveRef.current = false
       // Cancel this user's pending debounced writes before the next user's
       // data loads in, so a stale write can't fire under a different session.
       for (const timer of timers.values()) clearTimeout(timer)
       timers.clear()
       clearTimeout(savedRevertTimer.current)
     }
-  }, [userId])
+  }, [userId, runLoad])
+
+  const retryLoad = useCallback(() => {
+    if (!userId) return
+    return runLoad(userId)
+  }, [userId, runLoad])
 
   const setRoster = useCallback(
     (updater) => {
@@ -424,6 +451,8 @@ export function useSupabaseTipCalcStorage(userId) {
       activePeriodId: null,
       setActivePeriodId: () => {},
       loading: false,
+      loadError: null,
+      retryLoad: () => {},
       saveStatus: 'idle',
       flush: () => Promise.resolve(true),
       cancelPendingSyncs: () => {},
@@ -438,6 +467,8 @@ export function useSupabaseTipCalcStorage(userId) {
     activePeriodId,
     setActivePeriodId,
     loading,
+    loadError,
+    retryLoad,
     saveStatus,
     flush,
     cancelPendingSyncs,
