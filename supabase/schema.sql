@@ -21,7 +21,6 @@
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   username text not null,
-  location_id uuid,
   created_at timestamptz not null default now(),
   constraint username_format check (username ~ '^[A-Za-z0-9_-]{3,20}$')
 );
@@ -156,7 +155,7 @@ grant select, insert, update, delete on public.entry_hours to authenticated;
 -- SECURITY DEFINER so it can read profiles despite the caller being
 -- unauthenticated (RLS above blocks anon reads of profiles entirely). It only
 -- ever returns a single derived email string, never raw profile rows, so it
--- can't be used to enumerate usernames/ids/location_ids.
+-- can't be used to enumerate usernames/ids.
 
 create or replace function public.get_login_email(p_username text)
 returns text

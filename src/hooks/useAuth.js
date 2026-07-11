@@ -26,7 +26,7 @@ export function useAuth() {
     let active = true
     supabase
       .from('profiles')
-      .select('id, username, location_id')
+      .select('id, username')
       .eq('id', userId)
       .single()
       .then(({ data }) => {
