@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { nanoid } from 'nanoid'
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
+import { toast } from 'sonner'
 import { Check, Pencil, Trash2, Users, X } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -33,16 +34,19 @@ export function RosterManager({ roster, setRoster }) {
     if (!trimmed) return
     setRoster((prev) => [...prev, { id: nanoid(), name: trimmed, active: true }])
     setNewName('')
+    toast.success(`Added ${trimmed}`)
   }
 
   // Soft delete: keep the row (with active: false) instead of filtering it
   // out, so PeriodSummary/TipDistributionChart can still resolve their name.
   const handleRemove = (id) => {
+    const employee = roster.find((e) => e.id === id)
     setRoster((prev) => prev.map((e) => (e.id === id ? { ...e, active: false } : e)))
     if (editingId === id) {
       setEditingId(null)
       setEditName('')
     }
+    if (employee) toast(`Removed ${employee.name}`)
   }
 
   const startEdit = (employee) => {

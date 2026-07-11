@@ -111,14 +111,14 @@ export function PeriodSummary({ period, roster }) {
 
             {/* Phone: per-employee cards with a collapsible daily breakdown,
                 since one column per day doesn't fit a phone width. */}
-            <ul className="m-0 flex list-none flex-col gap-2 p-0 md:hidden">
+            <ul className="m-0 flex list-none flex-col gap-3 p-0 md:hidden">
               {rows.map(({ employeeId, name, total, days }) => {
                 const activeDays = days.filter((d) => d.share > 0)
                 return (
                   <li key={employeeId} className="rounded-lg border border-border bg-card p-4">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <span className="text-sm font-semibold text-foreground">{name}</span>
-                      <span className="font-mono text-base font-bold text-foreground">
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="min-w-0 text-base font-semibold text-foreground">{name}</span>
+                      <span className="shrink-0 font-mono text-base font-bold text-foreground">
                         ${total.toFixed(2)}
                       </span>
                     </div>

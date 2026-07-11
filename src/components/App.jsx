@@ -11,6 +11,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
+import { Toaster, toast } from 'sonner'
 import { useTipCalcStorage } from '@/hooks/useLocalStorage'
 import { useAuth } from '@/hooks/useAuth'
 import { useSupabaseTipCalcStorage } from '@/hooks/useSupabaseStorage'
@@ -181,6 +182,7 @@ export function App() {
     setPeriods([])
     setActivePeriodId(null)
     await flush?.()
+    toast.success('Roster and pay periods reset')
   }
 
   const minimalHeader = (
@@ -258,6 +260,7 @@ export function App() {
     setPeriods((prev) => [period, ...prev])
     setActivePeriodId(period.id)
     setShowNewPeriodForm(false)
+    toast.success(`Created ${formatPeriodRange(period.startDate, period.endDate)}`)
   }
 
   const handleUpdateDay = (dayIndex, updatedDay) => {
@@ -278,6 +281,7 @@ export function App() {
     )
     if (!confirmed) return
 
+    const removedPeriod = periods.find((p) => p.id === periodId)
     cancelPendingSyncs?.(periodId)
     setPeriods((prev) => prev.filter((p) => p.id !== periodId))
     if (activePeriodId === periodId) {
@@ -285,6 +289,9 @@ export function App() {
       setActivePeriodId(remaining[0]?.id ?? null)
     }
     await flush?.()
+    if (removedPeriod) {
+      toast.success(`Deleted ${formatPeriodRange(removedPeriod.startDate, removedPeriod.endDate)}`)
+    }
   }
 
   const pastPeriods = periods.filter((p) => p.id !== activePeriodId)
@@ -590,6 +597,23 @@ export function App() {
       </div>
     </div>
     {dialog}
+    <Toaster
+      theme={theme}
+      position="bottom-center"
+      closeButton
+      icons={{ success: <Check className="size-4" />, error: <AlertTriangle className="size-4" /> }}
+      toastOptions={{
+        duration: 3500,
+        classNames: {
+          toast: 'rounded-xl border border-border bg-card text-card-foreground shadow-lg',
+          title: 'text-sm font-medium text-foreground',
+          description: 'text-sm text-muted-foreground',
+          icon: 'text-primary',
+          error: 'border-destructive/40 text-destructive',
+          closeButton: 'border-border bg-card text-muted-foreground hover:bg-accent',
+        },
+      }}
+    />
     </>
   )
 }
