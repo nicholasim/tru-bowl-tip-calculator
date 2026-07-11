@@ -22,7 +22,7 @@ async function exec(promise) {
 
 async function fetchAll() {
   const [employeesRes, periodsRes, entriesRes, hoursRes] = await Promise.all([
-    supabase.from('employees').select('id, name').order('created_at', { ascending: true }),
+    supabase.from('employees').select('id, name, active').order('created_at', { ascending: true }),
     supabase
       .from('pay_periods')
       .select('id, start_date, end_date')
@@ -63,7 +63,7 @@ async function fetchAll() {
     return { id: p.id, startDate: p.start_date, endDate: p.end_date, days }
   })
 
-  const roster = (employeesRes.data ?? []).map((e) => ({ id: e.id, name: e.name }))
+  const roster = (employeesRes.data ?? []).map((e) => ({ id: e.id, name: e.name, active: e.active }))
 
   return { roster, periods }
 }
@@ -74,16 +74,21 @@ async function syncRosterDiff(prev, next) {
 
   const added = next.filter((e) => !prevIds.has(e.id))
   const removed = prev.filter((e) => !nextIds.has(e.id))
+  // "Removed" via the UI now means active flipped false, not a missing id --
+  // the id-missing branch below stays reachable only through a full roster
+  // wipe (handleResetUser's setRoster([])), which really does want a delete.
   const changed = next.filter((e) => {
     const old = prev.find((p) => p.id === e.id)
-    return old && old.name !== e.name
+    return old && (old.name !== e.name || old.active !== e.active)
   })
 
   if (added.length) {
     await exec(supabase.from('employees').insert(added.map((e) => ({ id: e.id, name: e.name }))))
   }
   for (const e of changed) {
-    await exec(supabase.from('employees').update({ name: e.name }).eq('id', e.id))
+    await exec(
+      supabase.from('employees').update({ name: e.name, active: e.active }).eq('id', e.id)
+    )
   }
   if (removed.length) {
     await exec(

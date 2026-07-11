@@ -26,7 +26,11 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // ignoreRestSiblings: components that destructure a prop only to
+      // exclude it from a `...rest` spread (e.g. dropping non-DOM props
+      // before spreading the remainder onto a native element) shouldn't be
+      // flagged just because the excluded prop itself goes unread.
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', ignoreRestSiblings: true }],
     },
   },
   {

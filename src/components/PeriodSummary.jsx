@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { computePeriodTotals } from '../utils/calculations'
 import { formatDate } from '../lib/periodHelpers'
+import { buildRosterMap, getEmployeeDisplayName } from '../lib/roster'
 import { TipDistributionChart } from './TipDistributionChart'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 
@@ -13,12 +14,15 @@ export function PeriodSummary({ period, roster }) {
     [period.days]
   )
 
-  const rosterMap = Object.fromEntries(roster.map((e) => [e.id, e]))
-  const getDisplayName = (id) => rosterMap[id]?.name ?? 'Former employee'
+  // roster carries every employee ever added (active + inactive), so a
+  // former employee's name still resolves for their historical entries.
+  const rosterMap = buildRosterMap(roster)
+  const getDisplayName = (id) => getEmployeeDisplayName(rosterMap, id)
+  // Sort by the bare name, not the "(former employee)"-suffixed display
+  // string, so alphabetical order matches the person's name either way.
+  const getSortName = (id) => rosterMap[id]?.name ?? 'Former employee'
   const employeeIds = [...new Set([...Object.keys(byEmployee), ...roster.map((e) => e.id)])]
-  const sortedIds = employeeIds.sort((a, b) =>
-    getDisplayName(a).localeCompare(getDisplayName(b))
-  )
+  const sortedIds = employeeIds.sort((a, b) => getSortName(a).localeCompare(getSortName(b)))
 
   // Shared per-employee data for both the desktop table and the mobile
   // cards, so the "does this employee have any data" filtering only

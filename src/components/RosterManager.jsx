@@ -2,26 +2,42 @@
 
 import { useState } from 'react'
 import { nanoid } from 'nanoid'
+import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
 import { Check, Pencil, Trash2, X } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+
+const MotionLi = motion.li
 
 export function RosterManager({ roster, setRoster }) {
+  // MotionConfig's reducedMotion="user" only suppresses *positional*
+  // (x/y/layout) animation -- opacity still fades at full duration -- so
+  // the row transition is gated on this too, to make add/remove fully
+  // instant (not just non-jumpy) for reduced-motion users.
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
   const [newName, setNewName] = useState('')
   const [editingId, setEditingId] = useState(null)
   const [editName, setEditName] = useState('')
+
+  // roster carries every employee ever added (active + inactive), so their
+  // names survive removal for historical entries -- this component only
+  // ever shows/edits the active ones.
+  const activeRoster = roster.filter((e) => e.active !== false)
 
   const handleAdd = (e) => {
     e.preventDefault()
     const trimmed = newName.trim()
     if (!trimmed) return
-    setRoster((prev) => [...prev, { id: nanoid(), name: trimmed }])
+    setRoster((prev) => [...prev, { id: nanoid(), name: trimmed, active: true }])
     setNewName('')
   }
 
+  // Soft delete: keep the row (with active: false) instead of filtering it
+  // out, so PeriodSummary/TipDistributionChart can still resolve their name.
   const handleRemove = (id) => {
-    setRoster((prev) => prev.filter((e) => e.id !== id))
+    setRoster((prev) => prev.map((e) => (e.id === id ? { ...e, active: false } : e)))
     if (editingId === id) {
       setEditingId(null)
       setEditName('')
@@ -67,9 +83,16 @@ export function RosterManager({ roster, setRoster }) {
         </form>
 
         <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
-          {roster.map((employee) => (
-            <li
+          <MotionConfig reducedMotion="user">
+          <AnimatePresence initial={false}>
+            {activeRoster.map((employee) => (
+            <MotionLi
               key={employee.id}
+              layout={!prefersReducedMotion}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: 24 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.18, ease: 'easeOut' }}
               className="flex items-center justify-between gap-2 rounded-md px-2 py-1 transition-colors hover:bg-accent"
             >
               {editingId === employee.id ? (
@@ -124,11 +147,13 @@ export function RosterManager({ roster, setRoster }) {
                   </div>
                 </>
               )}
-            </li>
-          ))}
+            </MotionLi>
+            ))}
+          </AnimatePresence>
+          </MotionConfig>
         </ul>
 
-        {roster.length === 0 && (
+        {activeRoster.length === 0 && (
           <p className="mt-2 text-sm text-muted-foreground">Add employees to get started.</p>
         )}
       </CardContent>
