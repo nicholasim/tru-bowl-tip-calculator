@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { Users } from 'lucide-react'
 import { distributeTipsByHours } from '../utils/calculations'
 import { formatDate } from '../lib/periodHelpers'
 import { DEFAULT_TIPS } from '../lib/constants'
+import { buildRosterMap } from '../lib/roster'
 import { TipDistributionChart } from './TipDistributionChart'
 import { cn } from '@/lib/utils'
 import { Card, CardContent } from '@/components/ui/card'
@@ -59,10 +61,10 @@ export function DayEntry({ day, roster, onUpdate }) {
     [tips, hours]
   )
 
-  const rosterMap = useMemo(
-    () => Object.fromEntries(roster.map((e) => [e.id, e])),
-    [roster]
-  )
+  // roster carries every employee ever added (active + inactive); the
+  // lookup map needs all of them so a former employee's name still
+  // resolves, but the "add to this day" picker below only offers active ones.
+  const rosterMap = useMemo(() => buildRosterMap(roster), [roster])
 
   const handleTipChange = (source, value) => {
     const allowed = toUsdInput(value)
@@ -108,7 +110,7 @@ export function DayEntry({ day, roster, onUpdate }) {
     : `Distributed: $${distributedTotal.toFixed(2)} — differs from $${totalTips.toFixed(2)} total by ${
         distributedTotal > totalTips ? '+' : '-'
       }$${Math.abs(distributedTotal - totalTips).toFixed(2)} (rounding)`
-  const availableToAdd = roster.filter((e) => hours[e.id] === undefined)
+  const availableToAdd = roster.filter((e) => e.active !== false && hours[e.id] === undefined)
 
   return (
     <Card className="rounded-xl shadow-sm">
@@ -201,10 +203,16 @@ export function DayEntry({ day, roster, onUpdate }) {
             </Button>
           </div>
           {roster.length === 0 && (
-            <p className="mb-2 text-sm text-muted-foreground">Add employees to the roster first.</p>
+            <p className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
+              <Users className="size-4 shrink-0" aria-hidden="true" />
+              Add employees to the roster first.
+            </p>
           )}
           {employeesOnDay.length === 0 && roster.length > 0 && (
-            <p className="mb-2 text-sm text-muted-foreground">Select an employee above and click Add.</p>
+            <p className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
+              <Users className="size-4 shrink-0" aria-hidden="true" />
+              Select an employee above and click Add.
+            </p>
           )}
           <ul className="m-0 flex list-none flex-col p-0">
             {employeesOnDay.map((employeeId) => {

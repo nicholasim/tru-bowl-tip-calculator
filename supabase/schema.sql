@@ -52,8 +52,15 @@ create table if not exists public.employees (
   id text primary key,
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   name text not null,
+  active boolean not null default true,
   created_at timestamptz not null default now()
 );
+
+-- Patches the column onto a database that ran this file before `active`
+-- existed. Removing an employee soft-deletes (active = false) rather than
+-- deleting the row, so their name survives on historical tip/hours entries
+-- instead of falling back to a generic "Former employee" label.
+alter table public.employees add column if not exists active boolean not null default true;
 
 create index if not exists employees_user_id_idx on public.employees (user_id);
 

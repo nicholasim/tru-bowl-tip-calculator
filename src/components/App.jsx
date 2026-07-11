@@ -1,7 +1,16 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { AlertTriangle, Check, Loader2, MoreVertical, Plus, Trash2, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  CalendarPlus,
+  Check,
+  Loader2,
+  MoreVertical,
+  Plus,
+  Trash2,
+  X,
+} from 'lucide-react'
 import { useTipCalcStorage } from '@/hooks/useLocalStorage'
 import { useAuth } from '@/hooks/useAuth'
 import { useSupabaseTipCalcStorage } from '@/hooks/useSupabaseStorage'
@@ -9,7 +18,6 @@ import { useTheme } from '@/hooks/useTheme'
 import { signOut } from '@/lib/auth'
 import { clearLocalGuestData } from '@/lib/migrateLocalData'
 import {
-  addDays,
   createPayPeriod,
   defaultEndDate,
   formatPeriodRange,
@@ -20,11 +28,14 @@ import { MAX_PERIOD_DAYS } from '@/lib/constants'
 import { RosterManager } from '@/components/RosterManager'
 import { DayEntry } from '@/components/DayEntry'
 import { PeriodSummary } from '@/components/PeriodSummary'
+import { PeriodRangePicker } from '@/components/PeriodRangePicker'
+import { useConfirmDialog } from '@/components/ConfirmDialog'
+import { AppSkeleton } from '@/components/AppSkeleton'
+import { EmptyState } from '@/components/EmptyState'
 import { AuthScreen } from '@/components/AuthScreen'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
@@ -48,6 +59,7 @@ export function App() {
   const { user, profile, loading: authLoading } = useAuth()
   const isAuthenticated = !!user
   const { theme, toggleTheme } = useTheme()
+  const { confirm, dialog } = useConfirmDialog()
 
   const [guestMode, setGuestMode] = useState(false)
 
@@ -95,9 +107,15 @@ export function App() {
     setNewPeriodEnd((prevEnd) => (prevEnd && prevEnd >= value ? prevEnd : defaultEndDate(value)))
   }
 
+  // Applied together from the range picker's Apply button, so the end is set
+  // explicitly rather than left to handleStartDateChange's defaultEndDate fallback.
+  const handleRangeApply = (start, end) => {
+    handleStartDateChange(start)
+    setNewPeriodEnd(end)
+  }
+
   const newPeriodSpanDays = periodLengthDays(newPeriodStart, newPeriodEnd)
   const newPeriodTooLong = newPeriodSpanDays > MAX_PERIOD_DAYS
-  const maxNewPeriodEnd = addDays(newPeriodStart, MAX_PERIOD_DAYS - 1)
 
   const activePeriod = periods.find((p) => p.id === activePeriodId)
 
@@ -147,7 +165,7 @@ export function App() {
     cloudStorage.cancelPendingSyncs?.()
     const flushedClean = await cloudStorage.flush?.()
     if (hadErrorAlready || flushedClean === false) {
-      const proceed = window.confirm(
+      const proceed = await confirm(
         'A save failed. Sign out anyway? Unsaved changes may be lost.'
       )
       if (!proceed) return
@@ -157,7 +175,7 @@ export function App() {
   }
 
   const handleResetUser = async () => {
-    if (!window.confirm('Clear all data for this user? Roster and pay periods will be reset.')) return
+    if (!(await confirm('Clear all data for this user? Roster and pay periods will be reset.'))) return
     cancelPendingSyncs?.()
     setRoster([])
     setPeriods([])
@@ -180,9 +198,8 @@ export function App() {
     return (
       <div className="min-h-screen bg-background">
         {minimalHeader}
-        <p className="m-6 rounded-xl border-2 border-dashed border-border bg-card p-12 text-center text-muted-foreground">
-          Loading…
-        </p>
+        <p role="status" className="sr-only">Loading…</p>
+        <AppSkeleton />
       </div>
     )
   }
@@ -200,9 +217,8 @@ export function App() {
     return (
       <div className="min-h-screen bg-background">
         {minimalHeader}
-        <p className="m-6 rounded-xl border-2 border-dashed border-border bg-card p-12 text-center text-muted-foreground">
-          Loading your data…
-        </p>
+        <p role="status" className="sr-only">Loading your data…</p>
+        <AppSkeleton />
       </div>
     )
   }
@@ -257,7 +273,7 @@ export function App() {
   }
 
   const handleRemovePeriod = async (periodId) => {
-    const confirmed = window.confirm(
+    const confirmed = await confirm(
       'Are you sure you want to delete this pay period? This will permanently remove all tip entries for this period.'
     )
     if (!confirmed) return
@@ -274,6 +290,7 @@ export function App() {
   const pastPeriods = periods.filter((p) => p.id !== activePeriodId)
 
   return (
+    <>
     <div className="min-h-screen bg-background">
       <header className="flex flex-wrap items-center gap-3 border-b-2 border-primary/50 bg-brand-charcoal px-4 py-3 sm:gap-5 sm:px-8">
         <img
@@ -447,7 +464,10 @@ export function App() {
                   </Button>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No pay period selected.</p>
+                <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CalendarPlus className="size-4 shrink-0" aria-hidden="true" />
+                  No pay period selected.
+                </p>
               )}
 
               <Button
@@ -470,23 +490,13 @@ export function App() {
               {showNewPeriodForm && (
                 <form onSubmit={handleCreatePeriod} className="flex flex-col gap-3 border-t border-border pt-3">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="new-period-start">Start date</Label>
-                    <Input
-                      id="new-period-start"
-                      type="date"
-                      value={newPeriodStart}
-                      onChange={(e) => handleStartDateChange(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="new-period-end">End date</Label>
-                    <Input
-                      id="new-period-end"
-                      type="date"
-                      value={newPeriodEnd}
-                      min={newPeriodStart}
-                      max={maxNewPeriodEnd}
-                      onChange={(e) => setNewPeriodEnd(e.target.value)}
+                    <Label htmlFor="new-period-range">Pay period</Label>
+                    <PeriodRangePicker
+                      id="new-period-range"
+                      startDate={newPeriodStart}
+                      endDate={newPeriodEnd}
+                      maxDays={MAX_PERIOD_DAYS}
+                      onApply={handleRangeApply}
                     />
                   </div>
                   {newPeriodTooLong && (
@@ -539,9 +549,22 @@ export function App() {
 
         <main className="min-w-0 flex-1">
           {!activePeriod ? (
-            <p className="rounded-xl border-2 border-dashed border-border bg-card p-12 text-center text-muted-foreground">
-              Create or select a pay period to start entering tips.
-            </p>
+            <div className="rounded-xl border-2 border-dashed border-border bg-card p-12">
+              <EmptyState
+                icon={CalendarPlus}
+                title="No pay period yet"
+                description="Create or select a pay period to start entering tips."
+              >
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowNewPeriodForm(true)}
+                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                >
+                  <Plus className="size-4" /> New pay period
+                </Button>
+              </EmptyState>
+            </div>
           ) : (
             <>
               <PeriodSummary period={activePeriod} roster={sortedRoster} />
@@ -566,5 +589,7 @@ export function App() {
         </main>
       </div>
     </div>
+    {dialog}
+    </>
   )
 }

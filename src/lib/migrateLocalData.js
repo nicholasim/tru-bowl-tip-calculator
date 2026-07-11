@@ -56,7 +56,7 @@ export async function migrateLocalDataToSupabase() {
   if (roster.length) {
     const { error } = await supabase
       .from('employees')
-      .insert(roster.map((e) => ({ id: e.id, name: e.name })))
+      .insert(roster.map((e) => ({ id: e.id, name: e.name, active: e.active ?? true })))
     if (error) throw error
   }
 

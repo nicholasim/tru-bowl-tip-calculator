@@ -17,6 +17,16 @@ export function toIsoDateString(date) {
 }
 
 /**
+ * Parse a 'YYYY-MM-DD' string into a Date at *local* midnight -- the inverse
+ * of toIsoDateString. Deliberately not `new Date(isoDate)`, which parses as
+ * UTC midnight and reintroduces the same off-by-one-day bug toIsoDateString
+ * avoids.
+ */
+export function parseLocalDate(isoDate) {
+  return new Date(isoDate + 'T00:00:00')
+}
+
+/**
  * @param {string} isoDate - ISO date string (YYYY-MM-DD)
  * @param {number} days - Number of days to add (may be negative)
  * @returns {string} ISO date string
